@@ -1,0 +1,20 @@
+@baseUrl=http://localhost:8081
+
+
+### GET request to example server
+GET {{baseUrl}}/api/products/_list
+
+### GET request to example server
+GET {{baseUrl}}/api/products/6928660a-0f24-42c6-9347-9ba50c91ba17
+
+
+### GET request to example server
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "productId": "6928660a-0f24-42c6-9347-9ba50c91ba17",
+  "tradeName": "qq"
+}
+
+###
