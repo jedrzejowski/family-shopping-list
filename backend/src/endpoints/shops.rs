@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::json;
 use crate::app_state::AppState;
 use crate::database::{RepositoryBean};
+use crate::family_context::FamilyContext;
 use crate::model;
 
 pub fn make_router() -> Router<AppState> {
@@ -20,26 +21,28 @@ pub fn make_router() -> Router<AppState> {
 
 
 pub async fn get_shop_id_list(
+  family_context: FamilyContext,
   shop_repo: State<RepositoryBean<model::Shop>>,
   Query(search_params): Query<model::SearchParams>,
 ) -> Result<impl IntoResponse, StatusCode> {
-  match shop_repo.search(search_params).await {
+  match shop_repo.search(&family_context, search_params).await {
     Ok(search_result) => {
       Ok(Json(search_result))
     }
     Err(err) => {
       log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)
-    },
+    }
   }
 }
 
 
 pub async fn get_shop(
+  family_context: FamilyContext,
   shop_repo: State<RepositoryBean<model::Shop>>,
   Path(shop_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, StatusCode> {
-  match shop_repo.get(shop_id).await {
+  match shop_repo.get(&family_context, shop_id).await {
     Ok(Some(shop)) => Ok(Json(shop)),
     Ok(None) => Err(StatusCode::NOT_FOUND),
     Err(err) => {
@@ -50,10 +53,11 @@ pub async fn get_shop(
 }
 
 pub async fn create_shop(
+  family_context: FamilyContext,
   shop_repo: State<RepositoryBean<model::Shop>>,
   Json(shop): Json<model::Shop>,
 ) -> Result<impl IntoResponse, StatusCode> {
-  match shop_repo.create(shop).await {
+  match shop_repo.create(&family_context, shop).await {
     Ok(shopId) => {
       let value = json!({
         "shopId": shopId
@@ -68,10 +72,11 @@ pub async fn create_shop(
 }
 
 pub async fn update_shop(
+  family_context: FamilyContext,
   shop_repo: State<RepositoryBean<model::Shop>>,
   Json(shop): Json<model::Shop>,
 ) -> Result<impl IntoResponse, StatusCode> {
-  match shop_repo.update(shop).await {
+  match shop_repo.update(&family_context, shop).await {
     Ok(_) => {
       Ok(StatusCode::ACCEPTED)
     }

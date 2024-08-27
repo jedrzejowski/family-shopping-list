@@ -3,14 +3,12 @@ export interface SearchResult<T> {
 }
 
 export interface Product {
-  familyId: string;
   productId: string;
   tradeName: string;
   tags: { name: string }[];
 }
 
 export interface Shop {
-  familyId: string;
   shopId: string;
   brandName: string;
   addressCity?: string;

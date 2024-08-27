@@ -1,5 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import * as model from '../model.ts';
+import {useFamilyId} from './family.ts';
 
 export function createRepo<T>(name: string, args: {
   idField: keyof T;
@@ -10,6 +11,7 @@ export function createRepo<T>(name: string, args: {
     limit: number;
     offset: number;
   }) {
+    const familyId = useFamilyId();
 
     return useQuery<model.SearchResult<string>>({
       queryKey: ['repo/search', name, args],
@@ -20,7 +22,11 @@ export function createRepo<T>(name: string, args: {
         if (args.searchText) params.set('searchText', args.searchText);
 
 
-        const response = await fetch(`/api/${name}?` + params.toString());
+        const response = await fetch(`/api/${name}?` + params.toString(), {
+          headers: {
+            'x-family-id': familyId,
+          }
+        });
 
         if (response.status !== 200) {
           throw response;
@@ -32,10 +38,16 @@ export function createRepo<T>(name: string, args: {
   }
 
   function useEntity(id: string) {
+    const familyId = useFamilyId();
+
     return useQuery<T>({
       queryKey: ['repo', name, id],
       queryFn: async () => {
-        const response = await fetch(`/api/${name}/${id}`);
+        const response = await fetch(`/api/${name}/${id}`, {
+          headers: {
+            'x-family-id': familyId,
+          }
+        });
 
         if (response.status !== 200) {
           throw response;
@@ -47,7 +59,9 @@ export function createRepo<T>(name: string, args: {
   }
 
   function useUpdateEntityMutation() {
+    const familyId = useFamilyId();
     const queryClient = useQueryClient();
+
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
         const id = entity[args.idField];
@@ -55,6 +69,7 @@ export function createRepo<T>(name: string, args: {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'x-family-id': familyId,
           },
           body: JSON.stringify(entity),
         });
@@ -76,13 +91,16 @@ export function createRepo<T>(name: string, args: {
 
 
   function useCreateEntityMutation() {
+    const familyId = useFamilyId();
     const queryClient = useQueryClient();
+
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
         const response = await fetch(`/api/${name}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-family-id': familyId,
           },
           body: JSON.stringify(entity),
         });

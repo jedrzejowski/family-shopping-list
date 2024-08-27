@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useGetProductQuery, useUpdateProductMutation} from "../../state/products.ts";
+import {useGetProductQuery, useUpdateProductMutation} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ProductEditForm from "../../components/forms/ProductEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";

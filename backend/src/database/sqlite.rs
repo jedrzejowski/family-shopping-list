@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::sync::Arc;
 use anyhow::Result;
-use rusqlite::Connection;
+use rusqlite::{Connection, Params, ToSql};
 use tokio::sync::{Mutex, MutexGuard};
 use crate::model::{SearchParams, SearchResult};
 use rusqlite::types::{Value as SqlValue};

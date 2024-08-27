@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useGetShopQuery, useUpdateShopMutation} from "../../state/shops.ts";
+import {useGetShopQuery, useUpdateShopMutation} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ShopEditForm from "../../components/forms/ShopEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";

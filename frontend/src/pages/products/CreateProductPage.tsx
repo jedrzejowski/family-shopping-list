@@ -1,9 +1,8 @@
 import {FC} from "react";
-import {useCreateProductMutation} from "../../state/products.ts";
+import {useCreateProductMutation} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ProductEditForm from "../../components/forms/ProductEditForm.tsx";
 import * as model from "../../model.ts";
-import {useFamilyId} from "../../state/family.ts";
 import {NIL} from "uuid";
 import PageTitle from "../../components/PageTitle.tsx";
 import {useNavigate} from "react-router-dom";
@@ -12,10 +11,8 @@ import {useNavigate} from "react-router-dom";
 const CreateProductPage: FC = () => {
   const navigate = useNavigate();
   const productMutation = useCreateProductMutation();
-  const familyId = useFamilyId();
 
   const baseNewProduct: model.Product = {
-    familyId,
     productId: NIL,
     tags: [],
     tradeName: ''

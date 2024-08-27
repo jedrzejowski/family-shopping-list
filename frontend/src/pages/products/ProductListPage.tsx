@@ -1,5 +1,5 @@
 import {FC, useState} from "react";
-import {useGetProductQuery, useSearchProductQuery} from "../../state/products.ts";
+import {useGetProductQuery, useSearchProductQuery} from "../../state/stdRepos.ts";
 import {
   IconButton,
   List,

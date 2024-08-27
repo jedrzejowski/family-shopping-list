@@ -2,6 +2,7 @@ mod app_state;
 mod endpoints;
 mod database;
 mod model;
+mod family_context;
 
 use std::sync::Arc;
 use anyhow::Result;
