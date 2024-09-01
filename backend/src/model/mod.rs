@@ -1,10 +1,12 @@
 pub mod product;
 pub mod shop;
 pub mod shopping_list;
+mod shopping_list_item;
 
 use serde::{Deserialize, Serialize};
 pub use product::Product;
 pub use shop::Shop;
+pub use shopping_list::ShoppingList;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

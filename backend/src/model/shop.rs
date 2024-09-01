@@ -18,6 +18,10 @@ pub struct Shop {
 
 #[async_trait::async_trait]
 impl Repository<Shop> for SqlLiteDatabase {
+  fn id_field(&self) -> &str {
+    "shopId"
+  }
+
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
       family_context,
@@ -28,7 +32,7 @@ impl Repository<Shop> for SqlLiteDatabase {
   }
 
   async fn get(&self, family_context: &FamilyContext, shop_id: Uuid) -> Result<Option<Shop>> {
-    let connection = self.lock_connection().await;
+    let connection = self.legacy_lock_connection().await;
 
     let sql_result = connection.query_row(
         "select shop_id, brand_name, address_city, address_street, address_street_no
@@ -57,7 +61,7 @@ where family_id = ?
   }
 
   async fn create(&self, family_context: &FamilyContext, shop: Shop) -> Result<String> {
-    let connection = self.lock_connection().await;
+    let connection = self.legacy_lock_connection().await;
 
     let shop_id = Uuid::new_v4();
 
@@ -75,7 +79,7 @@ values (?, ?, ?, ?, ?, ?)
   }
 
   async fn update(&self, family_context: &FamilyContext, shop: Shop) -> Result<()> {
-    let connection = self.lock_connection().await;
+    let connection = self.legacy_lock_connection().await;
 
     connection.execute(
       "

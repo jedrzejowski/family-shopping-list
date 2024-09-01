@@ -1,7 +1,8 @@
+use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use anyhow::Result;
-use rusqlite::{named_params, params, ToSql};
+use rusqlite::{named_params};
 use crate::database::Repository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
@@ -24,6 +25,10 @@ pub struct ProductTag {
 
 #[async_trait::async_trait]
 impl Repository<Product> for SqlLiteDatabase {
+  fn id_field(&self) -> &str {
+    "productId"
+  }
+
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
       family_context,
@@ -34,7 +39,7 @@ impl Repository<Product> for SqlLiteDatabase {
   }
 
   async fn get(&self, family_context: &FamilyContext, product_id: Uuid) -> Result<Option<Product>> {
-    let connection = self.lock_connection().await;
+    let connection = self.legacy_lock_connection().await;
 
     let sql_result = connection.query_row(
       "select product_id, trade_name from products where family_id = :family_id and product_id = :product_id",
@@ -61,41 +66,35 @@ impl Repository<Product> for SqlLiteDatabase {
   }
 
   async fn create(&self, family_context: &FamilyContext, product: Product) -> Result<String> {
-    let connection = self.lock_connection().await;
-
     let product_id = Uuid::new_v4();
 
-    connection.execute(
-      "
-insert
-into products(family_id, product_id, trade_name)
-values (:family_id, :product_id, :trade_name)
-",
-      named_params! {
-        ":family_id": family_context.family_id,
-        ":product_id": product_id.to_string(),
-        ":trade_name": product.trade_name,
-      },
-    )?;
+    // language=sqlite
+    sqlx::query("
+      insert
+      into products(family_id, product_id, trade_name)
+      values (?, ?, ?)
+    ")
+      .bind(&family_context.family_id)
+      .bind(product.product_id.to_string())
+      .bind(&product.trade_name)
+      .execute(self.pool())
+      .await?;
 
     Ok(product_id.to_string())
   }
 
   async fn update(&self, family_context: &FamilyContext, product: Product) -> Result<()> {
-    let connection = self.lock_connection().await;
-
-    connection.execute(
-      "
-update products
-set trade_name = :trade_name
-where family_id = :family_id and product_id = :product_id
-",
-      named_params! {
-        ":trade_name": product.trade_name,
-        ":family_id": family_context.family_id,
-        ":product_id": product.product_id.to_string(),
-      },
-    )?;
+    // language=sqlite
+    sqlx::query("
+      update products
+      set trade_name = ?
+      where family_id = ? and product_id = ?
+    ")
+      .bind(&product.trade_name)
+      .bind(&family_context.family_id)
+      .bind(product.product_id.to_string())
+      .execute(self.pool())
+      .await?;
 
     Ok(())
   }

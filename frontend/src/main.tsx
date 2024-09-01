@@ -15,6 +15,8 @@ import CreateShopPage from './pages/shops/CreateShopProduct.tsx';
 import ShopListPage from "./pages/shops/ShopListPage.tsx";
 import EditShopPage from "./pages/shops/EditShopPage.tsx";
 import {LoadingShroudProvider} from "./LoadingShroud.tsx";
+import CreateShoppingListPage from "./pages/shoppingLists/CreateShoppingList.tsx";
+import EditShoppingListPage from "./pages/shoppingLists/EditShoppingListPage.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -31,6 +33,20 @@ const router = createHashRouter([
     </>,
     children: [
       {
+        path: "shopping-lists/@new",
+        Component: () => {
+          return <CreateShoppingListPage/>
+        },
+      },
+      {
+        path: "shopping-lists/:id",
+        Component: () => {
+          const {id} = useParams<"id">();
+          return <EditShoppingListPage shoppingListId={id!}/>
+        },
+      },
+
+      {
         path: "products",
         Component: ProductListPage,
       },
@@ -41,10 +57,10 @@ const router = createHashRouter([
         },
       },
       {
-        path: "products/:productId",
+        path: "products/:id",
         Component: () => {
-          const {productId} = useParams<"productId">();
-          return <EditProductPage productId={productId!}/>
+          const {id} = useParams<"id">();
+          return <EditProductPage productId={id!}/>
         },
       },
 

@@ -18,6 +18,7 @@ use crate::model::{SearchParams, SearchResult};
 
 #[async_trait::async_trait]
 pub trait Repository<T>: Sync + Send {
+  fn id_field(&self) -> &str;
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>>;
   async fn get(&self, family_context: &FamilyContext, id: Uuid) -> Result<Option<T>>;
   async fn create(&self, family_context: &FamilyContext, object: T) -> Result<String>;

@@ -15,3 +15,8 @@ export interface Shop {
   addressStreet?: string;
   addressStreetNo?: string;
 }
+
+export interface ShoppingList {
+  shoppingListId: string;
+  name: string;
+}

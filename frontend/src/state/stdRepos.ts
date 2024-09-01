@@ -18,3 +18,12 @@ export const {
 } = createRepo<model.Product>('products', {
   idField: 'productId',
 });
+
+export const {
+  useSearchQuery: useSearchShoppingListQuery,
+  useGetEntity: useGetShoppingListQuery,
+  useCreateEntityMutation: useCreateShoppingListMutation,
+  useUpdateEntityMutation: useUpdateShoppingListMutation,
+} = createRepo<model.ShoppingList>('shopping-lists', {
+  idField: 'shoppingListId',
+});

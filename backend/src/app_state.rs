@@ -6,5 +6,6 @@ use crate::model;
 pub struct AppState {
     pub product_repo: RepositoryBean<model::Product>,
     pub shop_repo: RepositoryBean<model::Shop>,
+    pub shopping_list_repo: RepositoryBean<model::ShoppingList>,
 }
 

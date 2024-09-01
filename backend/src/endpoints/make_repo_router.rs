@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use axum::extract::{FromRef, Path, Query, Request, State};
 use axum::http::StatusCode;
@@ -7,7 +8,6 @@ use axum::handler::Handler;
 use axum::routing::{get, post, put};
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use serde_json::json;
 use uuid::Uuid;
 use crate::app_state::AppState;
 use crate::database::RepositoryBean;
@@ -74,10 +74,10 @@ where
 {
   match repo.create(&family_context, entity).await {
     Ok(productId) => {
-      let value = json!({
-        "productId": productId
-      });
-      Ok((StatusCode::CREATED, Json(value)))
+      let mut response = HashMap::<String, serde_json::Value>::new();
+      response.insert(repo.id_field().to_string(), serde_json::Value::String(productId));
+
+      Ok((StatusCode::CREATED, Json(response)))
     }
     Err(err) => {
       println!("{}", err);
