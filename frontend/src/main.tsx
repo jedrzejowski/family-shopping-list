@@ -17,11 +17,18 @@ import EditShopPage from "./pages/shops/EditShopPage.tsx";
 import {LoadingShroudProvider} from "./LoadingShroud.tsx";
 import CreateShoppingListPage from "./pages/shoppingLists/CreateShoppingList.tsx";
 import EditShoppingListPage from "./pages/shoppingLists/EditShoppingListPage.tsx";
+import ShoppingListListPage from "./pages/shoppingLists/ShoppingListListPage.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000
+    }
+  }
+});
 
 const router = createHashRouter([
   {
@@ -32,6 +39,12 @@ const router = createHashRouter([
       </MainAppLayout>
     </>,
     children: [
+      {
+        path: "shopping-lists",
+        Component: () => {
+          return <ShoppingListListPage/>
+        },
+      },
       {
         path: "shopping-lists/@new",
         Component: () => {

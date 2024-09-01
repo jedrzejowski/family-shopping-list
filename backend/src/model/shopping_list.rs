@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use sqlx::{Acquire, Row};
+use sqlx::{Row};
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
 use crate::database::Repository;
@@ -22,13 +22,13 @@ impl Repository<ShoppingList> for SqlLiteDatabase {
   }
 
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
-    todo!()
-    // self.make_text_search(
-    //   family_context,
-    //   "select product_id from products where family_id = :family_id",
-    //   ["trade_name"],
-    //   search_params,
-    // ).await
+    self.make_text_search(
+      family_context,
+      // language=sqlite
+      "select shopping_list_id from shopping_lists where family_id = ?",
+      ["name"],
+      search_params,
+    ).await
   }
 
   async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingList>> {

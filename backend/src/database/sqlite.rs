@@ -2,12 +2,14 @@ use std::ops::Deref;
 use std::path::Path;
 use std::sync::Arc;
 use anyhow::Result;
+use log::LevelFilter;
 use rusqlite::{Connection};
 use tokio::sync::{Mutex, MutexGuard};
 use crate::model::{SearchParams, SearchResult};
 use rusqlite::types::{Value as SqlValue};
 use sqlx::pool::PoolConnection;
-use sqlx::{Executor, Sqlite, SqlitePool};
+use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
 use crate::family_context::FamilyContext;
 
 #[derive(Clone)]
@@ -18,9 +20,17 @@ pub struct SqlLiteDatabase {
 
 impl SqlLiteDatabase {
   pub async fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
-    let legacy_connection = Connection::open(path)?;
+    let legacy_connection = Connection::open(path.as_ref())?;
 
-    let pool = SqlitePool::connect("database.sqlite").await?;
+    let mut connect_options = SqliteConnectOptions::new()
+      .filename(path.as_ref())
+      .log_statements(LevelFilter::Info);
+
+    let mut pool_options = SqlitePoolOptions::new();
+
+    let pool = pool_options.connect_with(connect_options).await?;
+
+      // .connect("database.sqlite").await?;
 
     //     connection.execute(
     //       "
@@ -69,46 +79,33 @@ impl SqlLiteDatabase {
       for text_column in text_columns.as_ref() {
         sql.push_str(" and ");
         sql.push_str(text_column);
-        sql.push_str(" like :search_text");
+        sql.push_str(" like ?");
       }
     }
 
-    sql.push_str(" limit :limit offset :offset");
+    sql.push_str(" limit ? offset ?");
 
-    let connection = self.legacy_lock_connection().await;
+    let mut query = sqlx::query(&sql);
 
-    let mut stmt = connection.prepare(&sql)?;
+    query = query.bind(&family_context.family_id);
 
     if let Some(search_text) = &search_params.search_text {
-      stmt.raw_bind_parameter(
-        stmt.parameter_index(":search_text").unwrap().unwrap(),
-        SqlValue::Text(format!("%{}%", search_text)),
-      )?;
+      if search_params.search_text.is_some() {
+        for text_column in text_columns.as_ref() {
+          query = query.bind(search_text);
+        }
+      }
     }
 
-    stmt.raw_bind_parameter(
-      stmt.parameter_index(":family_id").unwrap().unwrap(),
-      SqlValue::Text(family_context.family_id.clone()),
-    )?;
+    query = query.bind(&search_params.limit);
+    query = query.bind(&search_params.offset);
 
-    stmt.raw_bind_parameter(
-      stmt.parameter_index(":limit").unwrap().unwrap(),
-      SqlValue::Integer(search_params.limit as i64),
-    )?;
+    let query = query.map(|row: SqliteRow| {
+      let id: String = row.get(0);
+      id
+    });
 
-    stmt.raw_bind_parameter(
-      stmt.parameter_index(":offset").unwrap().unwrap(),
-      SqlValue::Integer(search_params.offset as i64),
-    )?;
-
-    let mut rows = stmt.raw_query();
-
-    let mut items = vec![];
-
-    while let Some(row) = rows.next()? {
-      let id: String = row.get(0)?;
-      items.push(id);
-    }
+    let items = query.fetch_all(&self.pool).await?;
 
     Ok(SearchResult { items })
   }

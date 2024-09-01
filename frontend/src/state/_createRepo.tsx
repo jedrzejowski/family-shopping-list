@@ -132,7 +132,7 @@ export function createRepo<T>(name: string, args: {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: [name, data],
+          queryKey: ['repo', name, data],
           exact: true,
         });
       },
@@ -177,7 +177,7 @@ export function createRepo<T>(name: string, args: {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: [name, data],
+          queryKey: ['repo', name, data],
           exact: true,
         });
       },

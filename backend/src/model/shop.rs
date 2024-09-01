@@ -25,7 +25,8 @@ impl Repository<Shop> for SqlLiteDatabase {
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
       family_context,
-      "select shop_id from shops where true",
+      // language=sqlite
+      "select shop_id from shops where family_id = ?",
       ["brand_name"],
       search_params,
     ).await
@@ -35,12 +36,13 @@ impl Repository<Shop> for SqlLiteDatabase {
     let connection = self.legacy_lock_connection().await;
 
     let sql_result = connection.query_row(
-        "select shop_id, brand_name, address_city, address_street, address_street_no
+      // language=sqlite
+      "select shop_id, brand_name, address_city, address_street, address_street_no
 from shops
 where family_id = ?
   and shop_id = ?",
-        (&family_context.family_id, shop_id.to_string()),
-        |row| {
+      (&family_context.family_id, shop_id.to_string()),
+      |row| {
         let shop_id: String = row.get("shop_id")?;
 
         Ok(Shop {

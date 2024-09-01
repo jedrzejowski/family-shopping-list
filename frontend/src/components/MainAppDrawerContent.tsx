@@ -20,6 +20,12 @@ const MainAppDrawerContent: FC<{
   return <List>
 
     <ListItem disablePadding>
+      <ListItemButton onClick={handleNavigateFactory('/shopping-lists')}>
+        <ListItemText primary="Listy zakupów"/>
+      </ListItemButton>
+    </ListItem>
+
+    <ListItem disablePadding>
       <ListItemButton onClick={handleNavigateFactory('/products')}>
         <ListItemText primary="Produkty"/>
       </ListItemButton>

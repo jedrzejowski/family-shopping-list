@@ -32,7 +32,8 @@ impl Repository<Product> for SqlLiteDatabase {
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
       family_context,
-      "select product_id from products where family_id = :family_id",
+      // language=sqlite
+      "select product_id from products where family_id = ?",
       ["trade_name"],
       search_params,
     ).await
