@@ -9,10 +9,10 @@ pub struct FamilyContext {
 }
 
 #[async_trait::async_trait]
-impl FromRequestParts<AppState> for FamilyContext {
+impl <S> FromRequestParts<S> for FamilyContext {
   type Rejection = StatusCode;
 
-  async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+  async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
     let family_id = parts.headers.get("x-family-id");
 
     let family_id = match family_id {

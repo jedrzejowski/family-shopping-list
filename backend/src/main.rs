@@ -4,7 +4,7 @@ mod database;
 mod model;
 mod family_context;
 mod repository;
-pub mod make_repo_router;
+pub mod repo_endpoint_builder;
 
 use std::sync::Arc;
 use anyhow::Result;
