@@ -1,10 +1,10 @@
-use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use anyhow::Result;
-use rusqlite::{named_params};
+use sqlx::Row;
+use sqlx::sqlite::SqliteRow;
 use crate::repository::CrudRepository;
-use crate::database::sqlite::SqlLiteDatabase;
+use crate::database::sqlite::SqliteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};
 
@@ -24,7 +24,7 @@ pub struct ProductTag {
 
 
 #[async_trait::async_trait]
-impl CrudRepository<Product> for SqlLiteDatabase {
+impl CrudRepository<Product> for SqliteDatabase {
   fn id_field(&self) -> &str {
     "productId"
   }
@@ -40,30 +40,27 @@ impl CrudRepository<Product> for SqlLiteDatabase {
   }
 
   async fn get(&self, family_context: &FamilyContext, product_id: Uuid) -> Result<Option<Product>> {
-    let connection = self.legacy_lock_connection().await;
 
-    let sql_result = connection.query_row(
-      "select product_id, trade_name from products where family_id = :family_id and product_id = :product_id",
-      named_params! {
-        ":family_id": family_context.family_id.to_string(),
-        ":product_id": product_id.to_string(),
-      },
-      |row| {
-        let product_id: String = row.get("product_id")?;
-
-        Ok(Product {
-          product_id: Uuid::parse_str(product_id.as_str()).unwrap(),
-          trade_name: row.get("trade_name")?,
+    // language=sqlite
+    let product = sqlx::query("
+      select product_id, trade_name
+      from products
+      where family_id = :family_id and product_id = :product_id
+    ")
+      .bind(family_context.family_id.to_string())
+      .bind(product_id.to_string())
+      .map(|row: SqliteRow| {
+        Product {
+          product_id: Uuid::parse_str(row.get(1)).unwrap(),
+          trade_name: row.get(1),
           tags: vec![],
-        })
-      },
-    );
+        }
+      })
+      .fetch_all(self.pool())
+      .await?
+      .pop();
 
-    match sql_result {
-      Ok(product) => Ok(Some(product)),
-      Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-      Err(err) => Err(err.into()),
-    }
+    Ok(product)
   }
 
   async fn create(&self, family_context: &FamilyContext, product: Product) -> Result<String> {

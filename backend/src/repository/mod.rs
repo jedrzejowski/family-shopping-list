@@ -1,3 +1,8 @@
+mod shopping_list;
+mod sqlite_impl;
+
+pub use shopping_list::ShoppingListRepository;
+
 use std::sync::Arc;
 use serde::de::DeserializeOwned;
 use serde::Serialize;

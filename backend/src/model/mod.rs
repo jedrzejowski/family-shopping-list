@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub use product::Product;
 pub use shop::Shop;
 pub use shopping_list::ShoppingList;
+pub use shopping_list_item::ShoppingListItem;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

@@ -4,7 +4,7 @@ use uuid::Uuid;
 use anyhow::Result;
 use sqlx::Row;
 use crate::repository::CrudRepository;
-use crate::database::sqlite::SqlLiteDatabase;
+use crate::database::sqlite::SqliteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};
 
@@ -19,7 +19,7 @@ pub struct ShoppingListItem {
 }
 
 #[async_trait::async_trait]
-impl CrudRepository<ShoppingListItem> for SqlLiteDatabase {
+impl CrudRepository<ShoppingListItem> for SqliteDatabase {
   fn id_field(&self) -> &str {
     "shoppingListItemId"
   }

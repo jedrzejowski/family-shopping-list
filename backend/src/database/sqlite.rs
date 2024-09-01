@@ -1,28 +1,21 @@
-use std::ops::Deref;
 use std::path::Path;
-use std::sync::Arc;
 use anyhow::Result;
 use log::LevelFilter;
-use rusqlite::{Connection};
-use tokio::sync::{Mutex, MutexGuard};
 use crate::model::{SearchParams, SearchResult};
-use rusqlite::types::{Value as SqlValue};
 use sqlx::pool::PoolConnection;
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
 use crate::family_context::FamilyContext;
 
 #[derive(Clone)]
-pub struct SqlLiteDatabase {
-  legacy_connection: Arc<Mutex<Connection>>,
+pub struct SqliteDatabase {
   sqlx_pool: SqlitePool,
 }
 
-impl SqlLiteDatabase {
+impl SqliteDatabase {
   pub async fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
-    let legacy_connection = Connection::open(path.as_ref())?;
 
-    let mut connect_options = SqliteConnectOptions::new()
+    let connect_options = SqliteConnectOptions::new()
       .filename(path.as_ref())
       .log_statements(LevelFilter::Info);
 
@@ -48,7 +41,6 @@ impl SqlLiteDatabase {
     //     )?;
 
     Ok(Self {
-      legacy_connection: Arc::new(Mutex::new(legacy_connection)),
       sqlx_pool: pool,
     })
   }
@@ -60,10 +52,6 @@ impl SqlLiteDatabase {
 
   pub async fn acquire(&self) -> Result<PoolConnection<Sqlite>> {
     Ok(self.sqlx_pool.acquire().await?)
-  }
-
-  pub async fn legacy_lock_connection(&self) -> MutexGuard<'_, Connection> {
-    self.legacy_connection.lock().await
   }
 
   pub async fn make_text_search(

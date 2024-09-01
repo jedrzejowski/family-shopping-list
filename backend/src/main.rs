@@ -12,19 +12,20 @@ use axum::Router;
 use sqlx::{Acquire, Connection};
 use repository::CrudRepositoryBean;
 use crate::app_state::AppState;
-use crate::database::sqlite::SqlLiteDatabase;
+use crate::database::sqlite::SqliteDatabase;
 
 #[tokio::main]
 async fn main() -> Result<()> {
   dotenv::dotenv().ok();
   env_logger::init();
 
-  let database = SqlLiteDatabase::from_file("database.sqlite").await?;
+  let database = SqliteDatabase::from_file("database.sqlite").await?;
   let product_repo: CrudRepositoryBean<model::Product> = Arc::new(Box::new(database.clone()));
   let shop_repo: CrudRepositoryBean<model::Shop> = Arc::new(Box::new(database.clone()));
-  let shopping_list_repo: CrudRepositoryBean<model::ShoppingList> = Arc::new(Box::new(database));
+  let shopping_list_repo: CrudRepositoryBean<model::ShoppingList> = Arc::new(Box::new(database.clone()));
 
   let app_state = AppState {
+    database,
     product_repo,
     shop_repo,
     shopping_list_repo,

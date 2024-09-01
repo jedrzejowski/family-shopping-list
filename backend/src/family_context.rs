@@ -2,7 +2,6 @@ use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{StatusCode};
 use uuid::Uuid;
-use crate::app_state::AppState;
 
 pub struct FamilyContext {
   pub family_id: Uuid,
