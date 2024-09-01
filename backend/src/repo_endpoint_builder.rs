@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
-use axum::extract::{FromRef, Path, Query, Request, State};
+use axum::extract::{FromRef, FromRequestParts, Path, Query, Request, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Json, Router};
@@ -9,15 +9,16 @@ use axum::routing::{get, post, put};
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use uuid::Uuid;
-use crate::repository::CrudRepositoryBean;
+use crate::app_state::Bean;
+use crate::repository::{CrudRepository, CrudRepositoryBean};
 use crate::family_context::FamilyContext;
 use crate::model::SearchParams;
 
-pub trait RepoEndpointBuilder<State> {
-  fn with_crud_repository<Model>(self) -> Self
+pub trait RepoEndpointBuilder<S> {
+  fn with_crud_repository<M>(self) -> Self
   where
-    Model: Serialize + DeserializeOwned + Send + 'static,
-    CrudRepositoryBean<Model>: FromRef<State>;
+    M: Serialize + DeserializeOwned + Send + 'static,
+    Bean<dyn CrudRepository<M>>: FromRequestParts<S>;
 }
 
 impl<S> RepoEndpointBuilder<S> for Router<S>
@@ -27,7 +28,7 @@ where
   fn with_crud_repository<M>(self) -> Self
   where
     M: Serialize + DeserializeOwned + Send + 'static,
-    CrudRepositoryBean<M>: FromRef<S>,
+    Bean<dyn CrudRepository<M>>: FromRequestParts<S>,
   {
     self
       .route("/", get(get_id_list::<M>))
@@ -39,7 +40,7 @@ where
 
 async fn get_id_list<M>(
   family_context: FamilyContext,
-  repo: State<CrudRepositoryBean<M>>,
+  repo: CrudRepositoryBean<M>,
   Query(search_params): Query<SearchParams>,
 ) -> Result<impl IntoResponse, StatusCode>
 where
@@ -59,7 +60,7 @@ where
 
 async fn get_entity<M>(
   family_context: FamilyContext,
-  product_repo: State<CrudRepositoryBean<M>>,
+  product_repo: CrudRepositoryBean<M>,
   Path(product_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, StatusCode>
 where
@@ -77,7 +78,7 @@ where
 
 async fn create_entity<M>(
   family_context: FamilyContext,
-  repo: State<CrudRepositoryBean<M>>,
+  repo: CrudRepositoryBean<M>,
   Json(entity): Json<M>,
 ) -> Result<impl IntoResponse, StatusCode>
 where
@@ -99,7 +100,7 @@ where
 
 async fn update_entity<M>(
   family_context: FamilyContext,
-  repo: State<CrudRepositoryBean<M>>,
+  repo: CrudRepositoryBean<M>,
   Json(entity): Json<M>,
 ) -> Result<impl IntoResponse, StatusCode>
 where
