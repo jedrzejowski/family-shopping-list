@@ -1,6 +1,46 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
+import {ProviderContext as SnackbarContext, useSnackbar} from 'notistack';
+import {IconButton} from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import {useLoadingShroud} from "../LoadingShroud.tsx";
+
+function successSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
+  enqueueSnackbar({
+    message: 'Zapisano',
+    variant: 'success',
+    action: key => <>
+      <IconButton
+        aria-label="close"
+        color="inherit"
+        sx={{p: 0.5}}
+        onClick={() => closeSnackbar(key)}
+      >
+        <CloseIcon/>
+      </IconButton>
+    </>
+  });
+
+}
+
+function errorSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
+  enqueueSnackbar({
+    message: 'Wystąpił błąd',
+    variant: 'error',
+    action: key => <>
+      <IconButton
+        aria-label="close"
+        color="inherit"
+        sx={{p: 0.5}}
+        onClick={() => closeSnackbar(key)}
+      >
+        <CloseIcon/>
+      </IconButton>
+    </>
+  });
+
+}
 
 export function createRepo<T>(name: string, args: {
   idField: keyof T;
@@ -37,7 +77,7 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useEntity(id: string) {
+  function useGetEntity(id: string) {
     const familyId = useFamilyId();
 
     return useQuery<T>({
@@ -61,6 +101,8 @@ export function createRepo<T>(name: string, args: {
   function useUpdateEntityMutation() {
     const familyId = useFamilyId();
     const queryClient = useQueryClient();
+    const snackbar = useSnackbar();
+    const loadingShroud = useLoadingShroud();
 
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
@@ -80,12 +122,23 @@ export function createRepo<T>(name: string, args: {
 
         return entity[args.idField] as string;
       },
-      onSuccess: (data) => {
+      onMutate() {
+        loadingShroud(true);
+      },
+      onError() {
+        errorSnackbar(snackbar)
+      },
+      onSuccess(data) {
+        successSnackbar(snackbar);
+
         queryClient.invalidateQueries({
           queryKey: [name, data],
           exact: true,
         });
       },
+      onSettled() {
+        loadingShroud(false);
+      }
     });
   }
 
@@ -93,6 +146,8 @@ export function createRepo<T>(name: string, args: {
   function useCreateEntityMutation() {
     const familyId = useFamilyId();
     const queryClient = useQueryClient();
+    const snackbar = useSnackbar();
+    const loadingShroud = useLoadingShroud();
 
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
@@ -112,18 +167,29 @@ export function createRepo<T>(name: string, args: {
         const repo = await response.json();
         return repo[args.idField] as string;
       },
-      onSuccess: (data) => {
+      onMutate() {
+        loadingShroud(true);
+      },
+      onError() {
+        errorSnackbar(snackbar)
+      },
+      onSuccess(data) {
+        successSnackbar(snackbar);
+
         queryClient.invalidateQueries({
           queryKey: [name, data],
           exact: true,
         });
       },
+      onSettled() {
+        loadingShroud(false);
+      }
     });
   }
 
   return {
     useSearchQuery,
-    useEntity,
+    useGetEntity,
     useUpdateEntityMutation,
     useCreateEntityMutation,
   };

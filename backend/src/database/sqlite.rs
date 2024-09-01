@@ -5,6 +5,7 @@ use rusqlite::{Connection, Params, ToSql};
 use tokio::sync::{Mutex, MutexGuard};
 use crate::model::{SearchParams, SearchResult};
 use rusqlite::types::{Value as SqlValue};
+use crate::family_context::FamilyContext;
 
 #[derive(Clone)]
 pub struct SqlLiteDatabase {
@@ -39,6 +40,7 @@ impl SqlLiteDatabase {
 
   pub async fn make_text_search(
     &self,
+    family_context: &FamilyContext,
     base_sql: &str,
     text_columns: impl AsRef<[&str]>,
     search_params: SearchParams,
@@ -65,6 +67,11 @@ impl SqlLiteDatabase {
         SqlValue::Text(format!("%{}%", search_text)),
       )?;
     }
+
+    stmt.raw_bind_parameter(
+      stmt.parameter_index(":family_id").unwrap().unwrap(),
+      SqlValue::Text(family_context.family_id.clone()),
+    )?;
 
     stmt.raw_bind_parameter(
       stmt.parameter_index(":limit").unwrap().unwrap(),

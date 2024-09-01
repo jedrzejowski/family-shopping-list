@@ -14,6 +14,7 @@ import {SnackbarProvider} from 'notistack';
 import CreateShopPage from './pages/shops/CreateShopProduct.tsx';
 import ShopListPage from "./pages/shops/ShopListPage.tsx";
 import EditShopPage from "./pages/shops/EditShopPage.tsx";
+import {LoadingShroudProvider} from "./LoadingShroud.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -72,11 +73,12 @@ reactRoot.render(
   <StrictMode>
     <MyThemeProvider>
       <SnackbarProvider>
-
         <QueryClientProvider client={queryClient}>
+          <LoadingShroudProvider>
 
-          <RouterProvider router={router}/>
+            <RouterProvider router={router}/>
 
+          </LoadingShroudProvider>
         </QueryClientProvider>
       </SnackbarProvider>
     </MyThemeProvider>

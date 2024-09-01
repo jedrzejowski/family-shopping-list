@@ -1,5 +1,6 @@
 pub mod product;
 pub mod shop;
+pub mod shopping_list;
 
 use serde::{Deserialize, Serialize};
 pub use product::Product;

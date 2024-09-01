@@ -1,9 +1,9 @@
-import {createRepo} from './_createRepo.ts';
 import * as model from '../model.ts';
+import {createRepo} from './_createRepo.tsx';
 
 export const {
   useSearchQuery: useSearchShopQuery,
-  useEntity: useGetShopQuery,
+  useGetEntity: useGetShopQuery,
   useCreateEntityMutation: useCreateShopMutation,
   useUpdateEntityMutation: useUpdateShopMutation,
 } = createRepo<model.Shop>('shops', {
@@ -12,7 +12,7 @@ export const {
 
 export const {
   useSearchQuery: useSearchProductQuery,
-  useEntity: useGetProductQuery,
+  useGetEntity: useGetProductQuery,
   useCreateEntityMutation: useCreateProductMutation,
   useUpdateEntityMutation: useUpdateProductMutation,
 } = createRepo<model.Product>('products', {

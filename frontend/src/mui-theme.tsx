@@ -27,6 +27,9 @@ export const MyThemeProvider: FC<{
 
   const theme = useMemo(() => {
     return createTheme({
+      zIndex:{
+
+      },
       breakpoints: {
         values: {
           mobile: 0,

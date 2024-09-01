@@ -20,6 +20,7 @@ pub struct Shop {
 impl Repository<Shop> for SqlLiteDatabase {
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
+      family_context,
       "select shop_id from shops where true",
       ["brand_name"],
       search_params,

@@ -26,7 +26,8 @@ pub struct ProductTag {
 impl Repository<Product> for SqlLiteDatabase {
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
     self.make_text_search(
-      "select product_id from products where true",
+      family_context,
+      "select product_id from products where family_id = :family_id",
       ["trade_name"],
       search_params,
     ).await
