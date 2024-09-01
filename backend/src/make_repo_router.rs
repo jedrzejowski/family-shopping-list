@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use uuid::Uuid;
 use crate::app_state::AppState;
-use crate::database::CrudRepositoryBean;
+use crate::repository::CrudRepositoryBean;
 use crate::family_context::FamilyContext;
 use crate::model::SearchParams;
 

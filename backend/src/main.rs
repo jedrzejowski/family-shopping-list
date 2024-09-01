@@ -3,13 +3,15 @@ mod endpoints;
 mod database;
 mod model;
 mod family_context;
+mod repository;
+pub mod make_repo_router;
 
 use std::sync::Arc;
 use anyhow::Result;
 use axum::Router;
-use sqlx::{Acquire, Connection, SqlitePool};
+use sqlx::{Acquire, Connection};
+use repository::CrudRepositoryBean;
 use crate::app_state::AppState;
-use crate::database::{CrudRepositoryBean};
 use crate::database::sqlite::SqlLiteDatabase;
 
 #[tokio::main]

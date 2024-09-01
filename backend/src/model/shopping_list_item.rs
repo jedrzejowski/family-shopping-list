@@ -3,7 +3,7 @@ use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
 use anyhow::Result;
 use sqlx::Row;
-use crate::database::CrudRepository;
+use crate::repository::CrudRepository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};

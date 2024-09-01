@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Row};
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
-use crate::database::CrudRepository;
+use crate::repository::CrudRepository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};

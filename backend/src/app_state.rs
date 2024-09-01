@@ -1,6 +1,6 @@
 use axum::extract::FromRef;
-use crate::database::{CrudRepositoryBean};
 use crate::model;
+use crate::repository::CrudRepositoryBean;
 
 #[derive(FromRef, Clone)]
 pub struct AppState {
