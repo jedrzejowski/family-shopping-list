@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Row};
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
-use crate::database::Repository;
+use crate::database::CrudRepository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};
@@ -16,7 +16,7 @@ pub struct ShoppingList {
 }
 
 #[async_trait::async_trait]
-impl Repository<ShoppingList> for SqlLiteDatabase {
+impl CrudRepository<ShoppingList> for SqlLiteDatabase {
   fn id_field(&self) -> &str {
     "shoppingListId"
   }
@@ -39,7 +39,7 @@ impl Repository<ShoppingList> for SqlLiteDatabase {
       from shopping_lists
       where family_id = ? and shopping_list_id = ?
     ")
-      .bind(&family_context.family_id)
+      .bind(family_context.family_id.to_string())
       .bind(shopping_list_id.to_string())
       .map(|row: SqliteRow| {
         ShoppingList {
@@ -62,7 +62,7 @@ impl Repository<ShoppingList> for SqlLiteDatabase {
       into shopping_lists(family_id, shopping_list_id, name)
       values (?, ?, ?)
     ")
-      .bind(&family_context.family_id)
+      .bind(family_context.family_id.to_string())
       .bind(shopping_list_id.to_string())
       .bind(&shopping_list.name)
       .execute(self.pool())
@@ -79,7 +79,7 @@ impl Repository<ShoppingList> for SqlLiteDatabase {
       where family_id = ? and shopping_list_id = ?
     ")
       .bind(&shopping_list.name)
-      .bind(&family_context.family_id)
+      .bind(family_context.family_id.to_string())
       .bind(shopping_list.shopping_list_id.to_string())
       .execute(self.pool())
       .await?;

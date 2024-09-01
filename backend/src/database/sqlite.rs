@@ -15,7 +15,7 @@ use crate::family_context::FamilyContext;
 #[derive(Clone)]
 pub struct SqlLiteDatabase {
   legacy_connection: Arc<Mutex<Connection>>,
-  pool: SqlitePool,
+  sqlx_pool: SqlitePool,
 }
 
 impl SqlLiteDatabase {
@@ -49,17 +49,17 @@ impl SqlLiteDatabase {
 
     Ok(Self {
       legacy_connection: Arc::new(Mutex::new(legacy_connection)),
-      pool,
+      sqlx_pool: pool,
     })
   }
 
   #[inline]
   pub fn pool(&self) -> &SqlitePool {
-    &self.pool
+    &self.sqlx_pool
   }
 
   pub async fn acquire(&self) -> Result<PoolConnection<Sqlite>> {
-    Ok(self.pool.acquire().await?)
+    Ok(self.sqlx_pool.acquire().await?)
   }
 
   pub async fn legacy_lock_connection(&self) -> MutexGuard<'_, Connection> {
@@ -87,7 +87,7 @@ impl SqlLiteDatabase {
 
     let mut query = sqlx::query(&sql);
 
-    query = query.bind(&family_context.family_id);
+    query = query.bind(family_context.family_id.to_string());
 
     if let Some(search_text) = &search_params.search_text {
       if search_params.search_text.is_some() {
@@ -105,7 +105,7 @@ impl SqlLiteDatabase {
       id
     });
 
-    let items = query.fetch_all(&self.pool).await?;
+    let items = query.fetch_all(&self.sqlx_pool).await?;
 
     Ok(SearchResult { items })
   }

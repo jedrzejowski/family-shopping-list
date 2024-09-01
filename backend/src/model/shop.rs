@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use anyhow::Result;
-use crate::database::Repository;
+use crate::database::CrudRepository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};
@@ -17,7 +17,7 @@ pub struct Shop {
 }
 
 #[async_trait::async_trait]
-impl Repository<Shop> for SqlLiteDatabase {
+impl CrudRepository<Shop> for SqlLiteDatabase {
   fn id_field(&self) -> &str {
     "shopId"
   }
@@ -41,7 +41,7 @@ impl Repository<Shop> for SqlLiteDatabase {
 from shops
 where family_id = ?
   and shop_id = ?",
-      (&family_context.family_id, shop_id.to_string()),
+      (family_context.family_id.to_string(), shop_id.to_string()),
       |row| {
         let shop_id: String = row.get("shop_id")?;
 
@@ -73,7 +73,7 @@ insert
 into shops(family_id, shop_id, brand_name, address_city, address_street, address_street_no)
 values (?, ?, ?, ?, ?, ?)
 ",
-      (&family_context.family_id, shop_id.to_string(), &shop.brand_name,
+      (family_context.family_id.to_string(), shop_id.to_string(), &shop.brand_name,
        &shop.address_city, &shop.address_street, &shop.address_street_no),
     )?;
 

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use anyhow::Result;
 use rusqlite::{named_params};
-use crate::database::Repository;
+use crate::database::CrudRepository;
 use crate::database::sqlite::SqlLiteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult};
@@ -24,7 +24,7 @@ pub struct ProductTag {
 
 
 #[async_trait::async_trait]
-impl Repository<Product> for SqlLiteDatabase {
+impl CrudRepository<Product> for SqlLiteDatabase {
   fn id_field(&self) -> &str {
     "productId"
   }
@@ -45,7 +45,7 @@ impl Repository<Product> for SqlLiteDatabase {
     let sql_result = connection.query_row(
       "select product_id, trade_name from products where family_id = :family_id and product_id = :product_id",
       named_params! {
-        ":family_id": family_context.family_id,
+        ":family_id": family_context.family_id.to_string(),
         ":product_id": product_id.to_string(),
       },
       |row| {
@@ -75,7 +75,7 @@ impl Repository<Product> for SqlLiteDatabase {
       into products(family_id, product_id, trade_name)
       values (?, ?, ?)
     ")
-      .bind(&family_context.family_id)
+      .bind(family_context.family_id.to_string())
       .bind(product.product_id.to_string())
       .bind(&product.trade_name)
       .execute(self.pool())
@@ -92,7 +92,7 @@ impl Repository<Product> for SqlLiteDatabase {
       where family_id = ? and product_id = ?
     ")
       .bind(&product.trade_name)
-      .bind(&family_context.family_id)
+      .bind(family_context.family_id.to_string())
       .bind(product.product_id.to_string())
       .execute(self.pool())
       .await?;

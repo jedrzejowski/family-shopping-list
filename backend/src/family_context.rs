@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::app_state::AppState;
 
 pub struct FamilyContext {
-  pub family_id: String,
+  pub family_id: Uuid,
 }
 
 #[async_trait::async_trait]
@@ -26,7 +26,7 @@ impl FromRequestParts<AppState> for FamilyContext {
     };
 
     Ok(FamilyContext {
-      family_id: family_id.to_string(),
+      family_id: family_id,
     })
   }
 }
