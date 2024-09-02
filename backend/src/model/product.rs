@@ -73,7 +73,7 @@ impl CrudRepository<Product> for SqliteDatabase {
       values (?, ?, ?)
     ")
       .bind(family_context.family_id.to_string())
-      .bind(product.product_id.to_string())
+      .bind(product_id.to_string())
       .bind(&product.trade_name)
       .execute(self.pool())
       .await?;
