@@ -30,6 +30,7 @@ const CreateShoppingListPage: FC = () => {
     <PageTitle title="Nowa lista zakupów"/>
 
     <ShoppingListEditForm
+      isNew
       shoppingList={baseNewShoppingList}
       onSubmitChange={handleSubmit}
       autoFocus

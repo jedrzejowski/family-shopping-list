@@ -20,3 +20,11 @@ export interface ShoppingList {
   shoppingListId: string;
   name: string;
 }
+
+export interface ShoppingListItem {
+  shoppingListItemId: string;
+  shoppingListId: string;
+  productId: string;
+  isChecked: boolean;
+  sortOrder: number;
+}

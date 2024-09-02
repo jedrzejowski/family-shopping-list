@@ -45,13 +45,13 @@ impl CrudRepository<Product> for SqliteDatabase {
     let product = sqlx::query("
       select product_id, trade_name
       from products
-      where family_id = :family_id and product_id = :product_id
+      where family_id = ? and product_id = ?
     ")
       .bind(family_context.family_id.to_string())
       .bind(product_id.to_string())
       .map(|row: SqliteRow| {
         Product {
-          product_id: Uuid::parse_str(row.get(1)).unwrap(),
+          product_id: Uuid::parse_str(row.get(0)).unwrap(),
           trade_name: row.get(1),
           tags: vec![],
         }

@@ -19,7 +19,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
 
 
-const ShopListPage: FC = () => {
+const SearchShopsPage: FC = () => {
   const navigate = useNavigate();
   const [searchQueryText, setSearchQueryText] = useState('');
   const shopListQuery = useSearchShopQuery({
@@ -69,7 +69,7 @@ const ShopListPage: FC = () => {
   </PageContainer>;
 };
 
-export default ShopListPage;
+export default SearchShopsPage;
 
 const ShopItem: FC<{ shopId: string }> = props => {
   const navigate = useNavigate();

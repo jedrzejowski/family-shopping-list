@@ -92,7 +92,7 @@ where
       Ok((StatusCode::CREATED, Json(response)))
     }
     Err(err) => {
-      println!("{}", err);
+      log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)
     }
   }
@@ -111,7 +111,7 @@ where
       Ok(StatusCode::ACCEPTED)
     }
     Err(err) => {
-      println!("{}", err);
+      log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)
     }
   }

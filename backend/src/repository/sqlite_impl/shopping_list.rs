@@ -82,19 +82,22 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 
 #[async_trait::async_trait]
 impl ShoppingListRepository for SqliteDatabase {
-  async fn get_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Vec<String>> {
+  async fn search_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid, search_params: SearchParams) -> Result<SearchResult<String>> {
     // language=sqlite
     let items = sqlx::query("
       select shopping_list_item_id
       from shopping_list_items
       where family_id = ? and shopping_list_id = ?
+      limit ? offset ?
     ")
       .bind(family_context.family_id.to_string())
       .bind(shopping_list_id.to_string())
+      .bind(search_params.limit)
+      .bind(search_params.offset)
       .map(|row: SqliteRow| { row.get(0) })
       .fetch_all(self.pool())
       .await?;
 
-    Ok(items)
+    Ok(SearchResult { items })
   }
 }

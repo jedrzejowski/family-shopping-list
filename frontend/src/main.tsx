@@ -4,7 +4,7 @@ import {
   createHashRouter, Outlet,
   RouterProvider, useParams,
 } from "react-router-dom";
-import ProductListPage from "./pages/products/ProductListPage.tsx";
+import SearchProductsPage from "./pages/products/SearchProductsPage.tsx";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import EditProductPage from "./pages/products/EditProductPage.tsx";
 import MainAppLayout from "./components/MainAppLayout.tsx";
@@ -12,12 +12,13 @@ import CreateProductPage from "./pages/products/CreateProductPage.tsx";
 import {MyThemeProvider} from "./mui-theme.tsx";
 import {SnackbarProvider} from 'notistack';
 import CreateShopPage from './pages/shops/CreateShopProduct.tsx';
-import ShopListPage from "./pages/shops/ShopListPage.tsx";
+import SearchShopsPage from "./pages/shops/SearchShopsPage.tsx";
 import EditShopPage from "./pages/shops/EditShopPage.tsx";
 import {LoadingShroudProvider} from "./LoadingShroud.tsx";
 import CreateShoppingListPage from "./pages/shoppingLists/CreateShoppingList.tsx";
 import EditShoppingListPage from "./pages/shoppingLists/EditShoppingListPage.tsx";
-import ShoppingListListPage from "./pages/shoppingLists/ShoppingListListPage.tsx";
+import SearchShoppingListsPage from "./pages/shoppingLists/SearchShoppingListsPage.tsx";
+import CreateShoppingListItemPage from "./pages/shoppingListItems/CreateShoppingListItemPage.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -42,7 +43,7 @@ const router = createHashRouter([
       {
         path: "shopping-lists",
         Component: () => {
-          return <ShoppingListListPage/>
+          return <SearchShoppingListsPage/>
         },
       },
       {
@@ -58,10 +59,17 @@ const router = createHashRouter([
           return <EditShoppingListPage shoppingListId={id!}/>
         },
       },
+      {
+        path: "shopping-lists/:id/@newItem",
+        Component: () => {
+          const {id} = useParams<"id">();
+          return <CreateShoppingListItemPage shoppingListId={id!}/>
+        },
+      },
 
       {
         path: "products",
-        Component: ProductListPage,
+        Component: SearchProductsPage,
       },
       {
         path: "products/@new",
@@ -79,7 +87,7 @@ const router = createHashRouter([
 
       {
         path: "shops",
-        Component: ShopListPage,
+        Component: SearchShopsPage,
       },
       {
         path: "shops/@new",

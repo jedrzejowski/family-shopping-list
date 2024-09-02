@@ -5,11 +5,11 @@ import {ReactRouterMuiLink} from "./react-router.tsx";
 
 declare module '@mui/material/styles' {
   interface BreakpointOverrides {
-    xs: false;
-    sm: false;
-    md: false;
-    lg: false;
-    xl: false;
+    // xs: false;
+    // sm: false;
+    // md: false;
+    // lg: false;
+    // xl: false;
     mobile: true;
     desktop: true;
   }
@@ -32,6 +32,12 @@ export const MyThemeProvider: FC<{
       },
       breakpoints: {
         values: {
+          xs: 0,
+          sm: 600,
+          md: 900,
+          lg: 1200,
+          xl: 1536,
+
           mobile: 0,
           desktop: 640,
         },

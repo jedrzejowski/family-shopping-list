@@ -8,6 +8,7 @@ export const {
   useUpdateEntityMutation: useUpdateShopMutation,
 } = createRepo<model.Shop>('shops', {
   idField: 'shopId',
+  entityToText: shop => shop.brandName,
 });
 
 export const {
@@ -15,8 +16,10 @@ export const {
   useGetEntity: useGetProductQuery,
   useCreateEntityMutation: useCreateProductMutation,
   useUpdateEntityMutation: useUpdateProductMutation,
+  EntityAutocomplete: ProductAutocomplete,
 } = createRepo<model.Product>('products', {
   idField: 'productId',
+  entityToText: product => product.tradeName,
 });
 
 export const {
@@ -26,4 +29,14 @@ export const {
   useUpdateEntityMutation: useUpdateShoppingListMutation,
 } = createRepo<model.ShoppingList>('shopping-lists', {
   idField: 'shoppingListId',
+  entityToText: shoppingList => shoppingList.name,
+});
+
+export const {
+  useGetEntity: useGetShoppingListItemQuery,
+  useCreateEntityMutation: useCreateShoppingListItemMutation,
+  useUpdateEntityMutation: useUpdateShoppingListItemMutation,
+} = createRepo<model.ShoppingListItem>('shopping-list-items', {
+  idField: 'shoppingListItemId',
+  entityToText: () => 'TODO',
 });

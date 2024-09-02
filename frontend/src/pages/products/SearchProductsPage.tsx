@@ -1,5 +1,5 @@
 import {FC, useState} from "react";
-import {useGetShoppingListQuery, useSearchShoppingListQuery} from "../../state/stdRepos.ts";
+import {useGetProductQuery, useSearchProductQuery} from "../../state/stdRepos.ts";
 import {
   IconButton,
   List,
@@ -19,10 +19,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
 
 
-const ShoppingListListPage: FC = () => {
+const SearchProductsPage: FC = () => {
   const navigate = useNavigate();
   const [searchQueryText, setSearchQueryText] = useState('');
-  const shoppingListListQuery = useSearchShoppingListQuery({
+  const productListQuery = useSearchProductQuery({
     searchText: searchQueryText,
     limit: 10,
     offset: 0,
@@ -30,7 +30,7 @@ const ShoppingListListPage: FC = () => {
 
 
   return <PageContainer>
-    <PageTitle title="Listy zakupów"/>
+    <PageTitle title="Produkty"/>
 
     <Toolbar sx={{display: 'flex'}} disableGutters>
       <TextField
@@ -54,14 +54,14 @@ const ShoppingListListPage: FC = () => {
 
     <Divider sx={{mt: 1}}/>
 
-    {shoppingListListQuery.isPending ? (
+    {productListQuery.isPending ? (
       <div>Loading</div>
-    ) : shoppingListListQuery.isError ? (
+    ) : productListQuery.isError ? (
       <div>Error</div>
     ) : (
       <List>
-        {shoppingListListQuery.data.items.map(item => {
-          return <ShoppingListItem key={item} shoppingListId={item}/>
+        {productListQuery.data.items.map(item => {
+          return <ProductItem key={item} productId={item}/>
         })}
       </List>
     )}
@@ -69,17 +69,17 @@ const ShoppingListListPage: FC = () => {
   </PageContainer>;
 };
 
-export default ShoppingListListPage;
+export default SearchProductsPage;
 
-const ShoppingListItem: FC<{ shoppingListId: string }> = props => {
+const ProductItem: FC<{ productId: string }> = props => {
   const navigate = useNavigate();
-  const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId);
+  const productQuery = useGetProductQuery(props.productId);
 
-  if (shoppingListQuery.isPending) {
+  if (productQuery.isPending) {
     return <div>Loading</div>
   }
 
-  if (shoppingListQuery.isError) {
+  if (productQuery.isError) {
     return <div>Error</div>
   }
 
@@ -95,13 +95,13 @@ const ShoppingListItem: FC<{ shoppingListId: string }> = props => {
         <DeleteIcon sx={{color: colors.red[500]}}/>
       </IconButton>
       <IconButton
-        onClick={() => navigate(`./${props.shoppingListId}`)}
+        onClick={() => navigate(`./${props.productId}`)}
         edge="end"
       >
         <EditIcon/>
       </IconButton>
     </>}
   >
-    <ListItemText primary={shoppingListQuery.data.name}/>
+    <ListItemText primary={productQuery.data.tradeName}/>
   </ListItem>
 }

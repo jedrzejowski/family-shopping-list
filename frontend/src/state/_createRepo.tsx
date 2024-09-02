@@ -2,9 +2,11 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
 import {ProviderContext as SnackbarContext, useSnackbar} from 'notistack';
-import {IconButton} from "@mui/material";
+import {Autocomplete, Box, IconButton, TextField} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useLoadingShroud} from "../LoadingShroud.tsx";
+import {FC, HTMLAttributes, useState} from "react";
+import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 
 function successSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
   enqueueSnackbar({
@@ -44,7 +46,9 @@ function errorSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
 
 export function createRepo<T>(name: string, args: {
   idField: keyof T;
+  entityToText: (entity: T) => string;
 }) {
+  const {idField, entityToText} = args;
 
   function useSearchQuery(args: {
     searchText?: string;
@@ -54,7 +58,7 @@ export function createRepo<T>(name: string, args: {
     const familyId = useFamilyId();
 
     return useQuery<model.SearchResult<string>>({
-      queryKey: ['repo/search', name, args],
+      queryKey: ['_createRepo/search', name, args],
       queryFn: async () => {
         const params = new URLSearchParams();
         params.set('limit', args.limit.toString());
@@ -81,7 +85,7 @@ export function createRepo<T>(name: string, args: {
     const familyId = useFamilyId();
 
     return useQuery<T>({
-      queryKey: ['repo', name, id],
+      queryKey: ['_createRepo', name, id],
       queryFn: async () => {
         const response = await fetch(`/api/${name}/${id}`, {
           headers: {
@@ -106,7 +110,7 @@ export function createRepo<T>(name: string, args: {
 
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
-        const id = entity[args.idField];
+        const id = entity[idField];
         const response = await fetch(`/api/${name}/${id}`, {
           method: 'PUT',
           headers: {
@@ -120,7 +124,7 @@ export function createRepo<T>(name: string, args: {
           throw response;
         }
 
-        return entity[args.idField] as string;
+        return entity[idField] as string;
       },
       onMutate() {
         loadingShroud(true);
@@ -132,7 +136,7 @@ export function createRepo<T>(name: string, args: {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: ['repo', name, data],
+          queryKey: ['_createRepo', name, data],
           exact: true,
         });
       },
@@ -141,7 +145,6 @@ export function createRepo<T>(name: string, args: {
       }
     });
   }
-
 
   function useCreateEntityMutation() {
     const familyId = useFamilyId();
@@ -165,7 +168,7 @@ export function createRepo<T>(name: string, args: {
         }
 
         const repo = await response.json();
-        return repo[args.idField] as string;
+        return repo[idField] as string;
       },
       onMutate() {
         loadingShroud(true);
@@ -177,7 +180,7 @@ export function createRepo<T>(name: string, args: {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: ['repo', name, data],
+          queryKey: ['_createRepo', name, data],
           exact: true,
         });
       },
@@ -187,10 +190,58 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
+  const EntityAutocompleteRenderOption: FC<{
+    entityId: string;
+    optionProps: HTMLAttributes<HTMLLIElement>;
+  }> = props => {
+    const getQuery = useGetEntity(props.entityId)
+
+    return <Box
+      component="li"
+      {...props.optionProps}
+    >
+      {getQuery.data ? entityToText(getQuery.data) : 'Loading'}
+    </Box>
+  }
+
+  const EntityAutocomplete: FC<BaseTextFieldProps & {
+    value: string | null
+    onChange: (entityId: string | null) => void;
+  }> = props => {
+    const [inputValue, setInputValue] = useState('');
+    const searchQuery = useSearchQuery({
+      searchText: inputValue,
+      limit: 100,
+      offset: 0,
+    });
+
+    return <Autocomplete
+      value={props.value}
+      onChange={(_event, value)=> props.onChange(value)}
+      inputValue={inputValue}
+      onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
+      renderOption={(props, option) => {
+        const {key, ...optionProps} = props;
+        return <EntityAutocompleteRenderOption key={key} optionProps={optionProps} entityId={option}/>
+      }}
+      renderInput={(params) => {
+        return <TextField
+          sx={props.sx}
+          {...params}
+          label={props.label}
+          margin={props.margin}
+          fullWidth={props.fullWidth}
+        />;
+      }}
+      options={searchQuery.data?.items ?? []}
+    />
+  }
+
   return {
     useSearchQuery,
     useGetEntity,
     useUpdateEntityMutation,
     useCreateEntityMutation,
+    EntityAutocomplete
   };
 }
