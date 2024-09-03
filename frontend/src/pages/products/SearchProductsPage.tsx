@@ -17,54 +17,68 @@ import PageContainer from "../../components/PageContainer.tsx";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
+import Searchable from "../../components/Searchable.tsx";
 
 
 const SearchProductsPage: FC = () => {
   const navigate = useNavigate();
-  const [searchQueryText, setSearchQueryText] = useState('');
-  const productListQuery = useSearchProductQuery({
-    searchText: searchQueryText,
-    limit: 10,
-    offset: 0,
-  });
+  // const [searchQueryText, setSearchQueryText] = useState('');
+  // const productListQuery = useSearchProductQuery({
+  //   searchText: searchQueryText,
+  //   limit: 10,
+  //   offset: 0,
+  // });
 
 
   return <PageContainer>
     <PageTitle title="Produkty"/>
 
-    <Toolbar sx={{display: 'flex'}} disableGutters>
-      <TextField
-        label="Szukaj"
-        value={searchQueryText}
-        onChange={event => setSearchQueryText(event.target.value)}
-      />
+    <Searchable
+      useSearchQuery={useSearchProductQuery}
+      renderItem={productId => <ProductItem key={productId} productId={productId}/>}
+      toolbarActions={<>
+        <Button
+          variant="contained"
+          onClick={() => navigate('./@new')}
+        >
+          Dodaj
+        </Button>
+      </>}
+    />
 
-      <Box sx={{flex: 1}}>
+    {/*<Toolbar sx={{display: 'flex'}} disableGutters>*/}
+    {/*  <TextField*/}
+    {/*    label="Szukaj"*/}
+    {/*    value={searchQueryText}*/}
+    {/*    onChange={event => setSearchQueryText(event.target.value)}*/}
+    {/*  />*/}
 
-      </Box>
+    {/*  <Box sx={{flex: 1}}>*/}
 
-      <Button
-        variant="contained"
-        onClick={() => navigate('./@new')}
-      >
-        Dodaj
-      </Button>
+    {/*  </Box>*/}
 
-    </Toolbar>
+    {/*  <Button*/}
+    {/*    variant="contained"*/}
+    {/*    onClick={() => navigate('./@new')}*/}
+    {/*  >*/}
+    {/*    Dodaj*/}
+    {/*  </Button>*/}
 
-    <Divider sx={{mt: 1}}/>
+    {/*</Toolbar>*/}
 
-    {productListQuery.isPending ? (
-      <div>Loading</div>
-    ) : productListQuery.isError ? (
-      <div>Error</div>
-    ) : (
-      <List>
-        {productListQuery.data.items.map(item => {
-          return <ProductItem key={item} productId={item}/>
-        })}
-      </List>
-    )}
+    {/*<Divider sx={{mt: 1}}/>*/}
+
+    {/*{productListQuery.isPending ? (*/}
+    {/*  <div>Loading</div>*/}
+    {/*) : productListQuery.isError ? (*/}
+    {/*  <div>Error</div>*/}
+    {/*) : (*/}
+    {/*  <List>*/}
+    {/*    {productListQuery.data.items.map(item => {*/}
+    {/*      return <ProductItem key={item} productId={item}/>*/}
+    {/*    })}*/}
+    {/*  </List>*/}
+    {/*)}*/}
 
   </PageContainer>;
 };

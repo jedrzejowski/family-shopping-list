@@ -13,6 +13,7 @@ pub use shopping_list_item::ShoppingListItem;
 #[serde(rename_all = "camelCase")]
 pub struct SearchResult<T> {
   pub items: Vec<T>,
+  pub total_count: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

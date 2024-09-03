@@ -25,7 +25,10 @@ pub async fn get_shopping_list_items(
 ) -> Result<impl IntoResponse, StatusCode> {
   match shopping_list_repo.search_items(&family_context, product_id, search_params).await {
     Ok(items) => Ok(Json(items)),
-    Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    Err(err) => {
+      log::error!("{}", err);
+      Err(StatusCode::INTERNAL_SERVER_ERROR)
+    },
   }
 }
 

@@ -3,7 +3,7 @@ use anyhow::Result;
 use log::LevelFilter;
 use crate::model::{SearchParams, SearchResult};
 use sqlx::pool::PoolConnection;
-use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
+use sqlx::{ConnectOptions, Encode, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool, Type};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
 use crate::family_context::FamilyContext;
 
@@ -14,7 +14,6 @@ pub struct SqliteDatabase {
 
 impl SqliteDatabase {
   pub async fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
-
     let connect_options = SqliteConnectOptions::new()
       .filename(path.as_ref())
       .log_statements(LevelFilter::Info);
@@ -23,7 +22,7 @@ impl SqliteDatabase {
 
     let pool = pool_options.connect_with(connect_options).await?;
 
-      // .connect("database.sqlite").await?;
+    // .connect("database.sqlite").await?;
 
     //     connection.execute(
     //       "
@@ -54,47 +53,67 @@ impl SqliteDatabase {
     Ok(self.sqlx_pool.acquire().await?)
   }
 
-  pub async fn make_text_search(
+  pub async fn make_text_search<'args>(
     &self,
-    family_context: &FamilyContext,
-    base_sql: &str,
+    mut query_builder: QueryBuilder<'args, Sqlite>,
     text_columns: impl AsRef<[&str]>,
+    order_by: impl AsRef<[&str]>,
     search_params: SearchParams,
   ) -> Result<SearchResult<String>> {
-    let mut sql = base_sql.to_string();
-
-    if search_params.search_text.is_some() {
+    if let Some(search_text) = &search_params.search_text {
       for text_column in text_columns.as_ref() {
-        sql.push_str(" and ");
-        sql.push_str(text_column);
-        sql.push_str(" like ?");
+        query_builder.push(" and ");
+        query_builder.push(text_column);
+        query_builder.push(" like ?");
+
+        query_builder.push_bind(search_text.to_string());
       }
     }
 
-    sql.push_str(" limit ? offset ?");
+    let mut base_query = query_builder.build();
+    let base_sql = base_query.sql();
+    let base_arguments = base_query.take_arguments().unwrap().unwrap();
 
-    let mut query = sqlx::query(&sql);
+    let items = {
+      let mut query_builder = QueryBuilder::with_arguments(base_sql, base_arguments.clone());
 
-    query = query.bind(family_context.family_id.to_string());
-
-    if let Some(search_text) = &search_params.search_text {
-      if search_params.search_text.is_some() {
-        for text_column in text_columns.as_ref() {
-          query = query.bind(search_text);
+      let order_by = order_by.as_ref();
+      if order_by.len() > 0 {
+        query_builder.push(" order by ");
+        for order_by in order_by {
+          query_builder.push(order_by).push(" asc ");
         }
       }
-    }
 
-    query = query.bind(&search_params.limit);
-    query = query.bind(&search_params.offset);
+      query_builder.push(" limit ").push_bind(search_params.limit);
+      query_builder.push(" offset ").push_bind(search_params.offset);
 
-    let query = query.map(|row: SqliteRow| {
-      let id: String = row.get(0);
-      id
-    });
+      let query = query_builder.build();
 
-    let items = query.fetch_all(&self.sqlx_pool).await?;
+      let query = query.map(|row: SqliteRow| {
+        let id: String = row.get(0);
+        id
+      });
 
-    Ok(SearchResult { items })
+      query.fetch_all(&self.sqlx_pool).await?
+    };
+
+    let total_count = {
+      let sql = format!("select count(*) from({})", &base_sql);
+      let mut query_builder = QueryBuilder::with_arguments(sql, base_arguments.clone());
+      let query = query_builder.build();
+
+      let query = query.map(|row: SqliteRow| {
+        let id: u32 = row.get(0);
+        id
+      });
+
+      query.fetch_one(&self.sqlx_pool).await?
+    };
+
+    Ok(SearchResult {
+      items,
+      total_count,
+    })
   }
 }

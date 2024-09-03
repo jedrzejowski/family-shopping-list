@@ -30,13 +30,13 @@ impl CrudRepository<Product> for SqliteDatabase {
   }
 
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
-    self.make_text_search(
-      family_context,
-      // language=sqlite
-      "select product_id from products where family_id = ?",
-      ["trade_name"],
-      search_params,
-    ).await
+
+    // language=sqlite
+    let mut qb = sqlx::QueryBuilder::new(
+      "select product_id from products where ");
+    qb.push("family_id = ").push_bind(family_context.family_id.to_string());
+
+    self.make_text_search(qb, ["trade_name"], ["product_id"], search_params).await
   }
 
   async fn get(&self, family_context: &FamilyContext, product_id: Uuid) -> Result<Option<Product>> {

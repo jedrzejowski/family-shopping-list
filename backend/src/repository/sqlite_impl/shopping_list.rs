@@ -1,4 +1,4 @@
-use sqlx::Row;
+use sqlx::{Row};
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
 use anyhow::Result;
@@ -14,13 +14,12 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
   }
 
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
-    self.make_text_search(
-      family_context,
-      // language=sqlite
-      "select shopping_list_id from shopping_lists where family_id = ?",
-      ["name"],
-      search_params,
-    ).await
+    // language=sqlite
+    let mut qb = sqlx::QueryBuilder::new(
+      "select shopping_list_id from shopping_lists where ");
+    qb.push("family_id = ").push_bind(family_context.family_id.to_string());
+
+    self.make_text_search(qb, ["name"], ["shopping_list_id"], search_params).await
   }
 
   async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingList>> {
@@ -83,21 +82,13 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 #[async_trait::async_trait]
 impl ShoppingListRepository for SqliteDatabase {
   async fn search_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid, search_params: SearchParams) -> Result<SearchResult<String>> {
-    // language=sqlite
-    let items = sqlx::query("
-      select shopping_list_item_id
-      from shopping_list_items
-      where family_id = ? and shopping_list_id = ?
-      limit ? offset ?
-    ")
-      .bind(family_context.family_id.to_string())
-      .bind(shopping_list_id.to_string())
-      .bind(search_params.limit)
-      .bind(search_params.offset)
-      .map(|row: SqliteRow| { row.get(0) })
-      .fetch_all(self.pool())
-      .await?;
 
-    Ok(SearchResult { items })
+    // language=sqlite
+    let mut qb = sqlx::QueryBuilder::new(
+      "select shopping_list_item_id from shopping_list_items where ");
+    qb.push("family_id = ").push_bind(family_context.family_id.to_string());
+    qb.push("and shopping_list_id = ").push_bind(shopping_list_id.to_string());
+
+    self.make_text_search(qb, [], ["shopping_list_item_id"], search_params).await
   }
 }
