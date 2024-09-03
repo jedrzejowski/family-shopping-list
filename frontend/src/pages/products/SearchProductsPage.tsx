@@ -1,17 +1,6 @@
-import {FC, useState} from "react";
+import {FC} from "react";
 import {useGetProductQuery, useSearchProductQuery} from "../../state/stdRepos.ts";
-import {
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  colors,
-  TextField,
-  Toolbar,
-  Box,
-  Button,
-  Divider
-} from "@mui/material";
+import {IconButton, ListItem, ListItemText, colors, Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,13 +11,6 @@ import Searchable from "../../components/Searchable.tsx";
 
 const SearchProductsPage: FC = () => {
   const navigate = useNavigate();
-  // const [searchQueryText, setSearchQueryText] = useState('');
-  // const productListQuery = useSearchProductQuery({
-  //   searchText: searchQueryText,
-  //   limit: 10,
-  //   offset: 0,
-  // });
-
 
   return <PageContainer>
     <PageTitle title="Produkty"/>
@@ -45,40 +27,6 @@ const SearchProductsPage: FC = () => {
         </Button>
       </>}
     />
-
-    {/*<Toolbar sx={{display: 'flex'}} disableGutters>*/}
-    {/*  <TextField*/}
-    {/*    label="Szukaj"*/}
-    {/*    value={searchQueryText}*/}
-    {/*    onChange={event => setSearchQueryText(event.target.value)}*/}
-    {/*  />*/}
-
-    {/*  <Box sx={{flex: 1}}>*/}
-
-    {/*  </Box>*/}
-
-    {/*  <Button*/}
-    {/*    variant="contained"*/}
-    {/*    onClick={() => navigate('./@new')}*/}
-    {/*  >*/}
-    {/*    Dodaj*/}
-    {/*  </Button>*/}
-
-    {/*</Toolbar>*/}
-
-    {/*<Divider sx={{mt: 1}}/>*/}
-
-    {/*{productListQuery.isPending ? (*/}
-    {/*  <div>Loading</div>*/}
-    {/*) : productListQuery.isError ? (*/}
-    {/*  <div>Error</div>*/}
-    {/*) : (*/}
-    {/*  <List>*/}
-    {/*    {productListQuery.data.items.map(item => {*/}
-    {/*      return <ProductItem key={item} productId={item}/>*/}
-    {/*    })}*/}
-    {/*  </List>*/}
-    {/*)}*/}
 
   </PageContainer>;
 };

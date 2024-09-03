@@ -19,7 +19,7 @@ export default Searchable;
 
 const Paginated: SearchableI = props => {
   const [searchQueryText, setSearchQueryText] = useState('');
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10; // const [pageSize, setPageSize] = useState<number>(10);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const productListQuery = props.useSearchQuery({
@@ -39,6 +39,10 @@ const Paginated: SearchableI = props => {
     }
 
   }, [productListQuery.data?.totalCount, pageSize]);
+
+  useLayoutEffect(() => {
+    setPageNumber(1);
+  }, [searchQueryText]);
 
   return <>
     <Toolbar sx={{display: 'flex'}} disableGutters>

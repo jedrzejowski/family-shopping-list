@@ -1,71 +1,32 @@
-import {FC, useState} from "react";
+import {FC} from "react";
 import {useGetShopQuery, useSearchShopQuery} from "../../state/stdRepos.ts";
-import {
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  colors,
-  TextField,
-  Toolbar,
-  Box,
-  Button,
-  Divider
-} from "@mui/material";
+import {IconButton, ListItem, ListItemText, colors, Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
+import Searchable from "../../components/Searchable.tsx";
 
 
 const SearchShopsPage: FC = () => {
   const navigate = useNavigate();
-  const [searchQueryText, setSearchQueryText] = useState('');
-  const shopListQuery = useSearchShopQuery({
-    searchText: searchQueryText,
-    limit: 10,
-    offset: 0,
-  });
-
 
   return <PageContainer>
     <PageTitle title="Produkty"/>
 
-    <Toolbar sx={{display: 'flex'}} disableGutters>
-      <TextField
-        label="Szukaj"
-        value={searchQueryText}
-        onChange={event => setSearchQueryText(event.target.value)}
-      />
-
-      <Box sx={{flex: 1}}>
-
-      </Box>
-
-      <Button
-        variant="contained"
-        onClick={() => navigate('./@new')}
-      >
-        Dodaj
-      </Button>
-
-    </Toolbar>
-
-    <Divider sx={{mt: 1}}/>
-
-    {shopListQuery.isPending ? (
-      <div>Loading</div>
-    ) : shopListQuery.isError ? (
-      <div>Error</div>
-    ) : (
-      <List>
-        {shopListQuery.data.items.map(item => {
-          return <ShopItem key={item} shopId={item}/>
-        })}
-      </List>
-    )}
-
+    <Searchable
+      useSearchQuery={useSearchShopQuery}
+      renderItem={productId => <ShopItem key={productId} shopId={productId}/>}
+      toolbarActions={<>
+        <Button
+          variant="contained"
+          onClick={() => navigate('./@new')}
+        >
+          Dodaj
+        </Button>
+      </>}
+    />
   </PageContainer>;
 };
 
