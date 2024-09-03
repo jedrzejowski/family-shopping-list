@@ -1,13 +1,11 @@
 import {useFamilyId} from "./family.ts";
 import {useQuery} from "@tanstack/react-query";
 import * as model from "../model.ts";
+import {UseSearchQuery} from "./_createRepo.tsx";
 
-export function useShoppingListItemsQuery(args: {
+export const useShoppingListItemsQuery: UseSearchQuery<{
   shoppingListId: string;
-  searchText?: string;
-  limit: number;
-  offset: number;
-}) {
+}> = args => {
   const familyId = useFamilyId();
 
   return useQuery<model.SearchResult<string>>({
@@ -18,7 +16,7 @@ export function useShoppingListItemsQuery(args: {
       params.set('offset', args.offset.toString());
       if (args.searchText) params.set('searchText', args.searchText);
 
-      const response = await fetch(`/api/shopping-lists/${args.shoppingListId}/items` + params.toString(), {
+      const response = await fetch(`/api/shopping-lists/${args.shoppingListId}/items?` + params.toString(), {
         headers: {
           'x-family-id': familyId,
         }

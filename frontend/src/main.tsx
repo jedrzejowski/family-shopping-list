@@ -19,6 +19,7 @@ import CreateShoppingListPage from "./pages/shoppingLists/CreateShoppingList.tsx
 import EditShoppingListPage from "./pages/shoppingLists/EditShoppingListPage.tsx";
 import SearchShoppingListsPage from "./pages/shoppingLists/SearchShoppingListsPage.tsx";
 import CreateShoppingListItemPage from "./pages/shoppingListItems/CreateShoppingListItemPage.tsx";
+import SearchShoppingListItemsPage from "./pages/shoppingListItems/SearchShoppingListItemsPage.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -64,6 +65,13 @@ const router = createHashRouter([
         Component: () => {
           const {id} = useParams<"id">();
           return <CreateShoppingListItemPage shoppingListId={id!}/>
+        },
+      },
+      {
+        path: "shopping-lists/:id/items",
+        Component: () => {
+          const {id} = useParams<"id">();
+          return <SearchShoppingListItemsPage shoppingListId={id!}/>
         },
       },
 

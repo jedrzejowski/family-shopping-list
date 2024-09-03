@@ -82,11 +82,12 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useGetEntity(id: string) {
+  function useGetEntity(id: string | null | undefined) {
     const familyId = useFamilyId();
 
     return useQuery<T>({
       queryKey: ['_createRepo', name, id],
+      enabled: typeof id === 'string',
       queryFn: async () => {
         const response = await fetch(`/api/${name}/${id}`, {
           headers: {

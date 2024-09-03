@@ -18,7 +18,7 @@ const SearchShoppingListsPage: FC = () => {
 
     <Searchable
       useSearchQuery={useSearchShoppingListQuery}
-      renderItem={shoppingListId => <ShoppingListItem key={shoppingListId} shoppingListId={shoppingListId}/>}
+      renderItem={shoppingListId => <ShoppingList key={shoppingListId} shoppingListId={shoppingListId}/>}
       toolbarActions={<>
         <Button
           variant="contained"
@@ -34,7 +34,7 @@ const SearchShoppingListsPage: FC = () => {
 
 export default SearchShoppingListsPage;
 
-const ShoppingListItem: FC<{ shoppingListId: string }> = props => {
+const ShoppingList: FC<{ shoppingListId: string }> = props => {
   const navigate = useNavigate();
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId);
 

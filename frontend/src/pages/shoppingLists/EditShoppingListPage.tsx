@@ -20,7 +20,7 @@ const EditShoppingListPage: FC<{
 
   return <PageContainer>
 
-    <PageTitle title="Edycja sklepu"/>
+    <PageTitle title="Edycja listy zakupowej"/>
 
     <ShoppingListEditForm
       shoppingList={shoppingListQuery.data}
