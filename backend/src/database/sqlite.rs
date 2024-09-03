@@ -61,10 +61,11 @@ impl SqliteDatabase {
     search_params: SearchParams,
   ) -> Result<SearchResult<String>> {
     if let Some(search_text) = &search_params.search_text {
+      let search_text = format!("%{}%", search_text);
       for text_column in text_columns.as_ref() {
         query_builder.push(" and ");
         query_builder.push(text_column);
-        query_builder.push(" like ?");
+        query_builder.push(" like ");
 
         query_builder.push_bind(search_text.to_string());
       }
