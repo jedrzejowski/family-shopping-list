@@ -38,7 +38,7 @@ const MainAppLayout: FC<{
           edge="start"
           color="inherit"
           onClick={handleOpenDrawer}
-          sx={{display: {desktop: 'none'}}}
+          sx={{display: {desktop: 'none'}, mr: 1}}
         >
           <MenuIcon/>
         </IconButton>
@@ -46,7 +46,7 @@ const MainAppLayout: FC<{
         <Typography
           variant="h6"
           component="div"
-          sx={{flexGrow: 1, ml: 1}}
+          sx={{flexGrow: 1}}
         >
           Zakupy rodzinne
         </Typography>

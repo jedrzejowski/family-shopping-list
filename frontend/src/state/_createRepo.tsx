@@ -1,11 +1,11 @@
-import {useMutation, useQuery, useQueryClient, UseQueryResult} from '@tanstack/react-query';
+import {useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
 import {ProviderContext as SnackbarContext, SnackbarMessage, useSnackbar, VariantType} from 'notistack';
 import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, IconButton, TextField} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useLoadingShroud} from "../LoadingShroud.tsx";
-import {FC, HTMLAttributes, useRef, useState} from "react";
+import {FC, HTMLAttributes, ReactElement, useCallback, useRef, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {SearchQuery} from "../model.ts";
 
@@ -40,6 +40,14 @@ function errorSnackbar(snackbarCtx: SnackbarContext) {
 
 export interface UseSearchQuery<Props extends object = object> {
   (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
+}
+
+export interface UseDeleteUx {
+  (id: string): {
+    dialog: ReactElement | null,
+    start: () => void,
+    mutation: UseMutationResult<string, Error, string, void>
+  }
 }
 
 export function createRepo<T>(name: string, args: {
@@ -292,7 +300,7 @@ export function createRepo<T>(name: string, args: {
     />
   }
 
-  function useDeleteUx(id: string) {
+  const useDeleteUx: UseDeleteUx = (id: string) => {
     const mutation = useDeleteEntityMutation();
     const getQuery = useGetEntityQuery(id);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -322,10 +330,10 @@ export function createRepo<T>(name: string, args: {
       </Dialog>
     ) : null;
 
-    function start() {
+    const start = useCallback(() => {
       dialogLatch.current = true;
       setIsDialogOpen(true);
-    }
+    }, []);
 
     return {dialog, start, mutation}
   }

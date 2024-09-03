@@ -9,7 +9,7 @@ const PageTitle: FC<{
 }> = (props) => {
   const navigate = useNavigate();
 
-  return <Toolbar disableGutters sx={{mb: 2}}>
+  return <Toolbar disableGutters>
 
     <IconButton
       size="large"

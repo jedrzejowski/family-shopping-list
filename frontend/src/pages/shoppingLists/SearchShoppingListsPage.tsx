@@ -1,17 +1,15 @@
 import {FC} from "react";
-import {useGetShoppingListQuery, useSearchShoppingListQuery} from "../../state/stdRepos.ts";
-import {IconButton, ListItem, ListItemText, colors, Button} from "@mui/material";
+import {useDeleteShoppingListUx, useGetShoppingListQuery, useSearchShoppingListQuery} from "../../state/stdRepos.ts";
+import {Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
 import Searchable from "../../components/Searchable/Searchable.tsx";
+import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 
 
 const SearchShoppingListsPage: FC = () => {
   const navigate = useNavigate();
-
 
   return <PageContainer>
     <PageTitle title="Listy zakupów"/>
@@ -37,6 +35,7 @@ export default SearchShoppingListsPage;
 const ShoppingList: FC<{ shoppingListId: string }> = props => {
   const navigate = useNavigate();
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId);
+  const deleteUx = useDeleteShoppingListUx(props.shoppingListId);
 
   if (shoppingListQuery.isPending) {
     return <div>Loading</div>
@@ -46,25 +45,14 @@ const ShoppingList: FC<{ shoppingListId: string }> = props => {
     return <div>Error</div>
   }
 
-  return <ListItem
-    sx={{
-      pr: (16 + 40 * 2) + 'px',
-      '&:hover': {
-        background: theme => theme.palette.action.hover,
-      }
-    }}
-    secondaryAction={<>
-      <IconButton>
-        <DeleteIcon sx={{color: colors.red[500]}}/>
-      </IconButton>
-      <IconButton
-        onClick={() => navigate(`./${props.shoppingListId}`)}
-        edge="end"
-      >
-        <EditIcon/>
-      </IconButton>
-    </>}
-  >
-    <ListItemText primary={shoppingListQuery.data.name}/>
-  </ListItem>
+  return <>
+    {deleteUx.dialog}
+    <SearchableItem
+      primaryText={shoppingListQuery.data.name}
+      primaryAction={() => navigate(`./${props.shoppingListId}`)}
+      secondaryActions={[
+        {icon: 'delete', label: 'Usuń', handler: deleteUx.start}
+      ]}
+    />
+  </>
 }

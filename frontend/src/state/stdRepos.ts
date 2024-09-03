@@ -6,6 +6,7 @@ export const {
   useGetEntityQuery: useGetShopQuery,
   useCreateEntityMutation: useCreateShopMutation,
   useUpdateEntityMutation: useUpdateShopMutation,
+  useDeleteUx: useDeleteShopUx,
 } = createRepo<model.Shop>('shops', {
   idField: 'shopId',
   entityToText: shop => shop.brandName,
@@ -16,7 +17,6 @@ export const {
   useGetEntityQuery: useGetProductQuery,
   useCreateEntityMutation: useCreateProductMutation,
   useUpdateEntityMutation: useUpdateProductMutation,
-  useDeleteEntityMutation: useDeleteProductMutation,
   useDeleteUx: useDeleteProductUx,
   EntityAutocomplete: ProductAutocomplete,
 } = createRepo<model.Product>('products', {
@@ -29,6 +29,7 @@ export const {
   useGetEntityQuery: useGetShoppingListQuery,
   useCreateEntityMutation: useCreateShoppingListMutation,
   useUpdateEntityMutation: useUpdateShoppingListMutation,
+  useDeleteUx: useDeleteShoppingListUx,
 } = createRepo<model.ShoppingList>('shopping-lists', {
   idField: 'shoppingListId',
   entityToText: shoppingList => shoppingList.name,

@@ -1,12 +1,11 @@
 import {FC} from "react";
-import {useGetShopQuery, useSearchShopQuery} from "../../state/stdRepos.ts";
-import {IconButton, ListItem, ListItemText, colors, Button} from "@mui/material";
+import {useDeleteShopUx, useGetShopQuery, useSearchShopQuery} from "../../state/stdRepos.ts";
+import {Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
 import Searchable from "../../components/Searchable/Searchable.tsx";
+import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 
 
 const SearchShopsPage: FC = () => {
@@ -35,6 +34,7 @@ export default SearchShopsPage;
 const ShopItem: FC<{ shopId: string }> = props => {
   const navigate = useNavigate();
   const shopQuery = useGetShopQuery(props.shopId);
+  const deleteUx = useDeleteShopUx(props.shopId);
 
   if (shopQuery.isPending) {
     return <div>Loading</div>
@@ -44,25 +44,14 @@ const ShopItem: FC<{ shopId: string }> = props => {
     return <div>Error</div>
   }
 
-  return <ListItem
-    sx={{
-      pr: (16 + 40 * 2) + 'px',
-      '&:hover': {
-        background: theme => theme.palette.action.hover,
-      }
-    }}
-    secondaryAction={<>
-      <IconButton>
-        <DeleteIcon sx={{color: colors.red[500]}}/>
-      </IconButton>
-      <IconButton
-        onClick={() => navigate(`./${props.shopId}`)}
-        edge="end"
-      >
-        <EditIcon/>
-      </IconButton>
-    </>}
-  >
-    <ListItemText primary={shopQuery.data.brandName}/>
-  </ListItem>
+  return <>
+    {deleteUx.dialog}
+    <SearchableItem
+      primaryText={shopQuery.data.brandName}
+      primaryAction={() => navigate(`./${props.shopId}`)}
+      secondaryActions={[
+        {icon: 'delete', label: 'Usuń', handler: deleteUx.start}
+      ]}
+    />
+  </>
 }
