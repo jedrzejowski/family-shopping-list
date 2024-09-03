@@ -3,10 +3,13 @@ import {useGetShoppingListQuery, useUpdateShoppingListMutation} from "../../stat
 import PageContainer from "../../components/PageContainer.tsx";
 import ShoppingListEditForm from "../../components/forms/ShoppingListEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
+import {Button} from "@mui/material";
+import {useNavigate} from "react-router-dom";
 
 const EditShoppingListPage: FC<{
   shoppingListId: string;
 }> = props => {
+  const navigate = useNavigate();
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId);
   const shoppingListMutation = useUpdateShoppingListMutation();
 
@@ -20,7 +23,15 @@ const EditShoppingListPage: FC<{
 
   return <PageContainer>
 
-    <PageTitle title="Edycja listy zakupowej"/>
+    <PageTitle title="Edycja listy zakupowej">
+
+      <Button
+        variant="contained"
+        onClick={() => navigate(`/shopping-lists/${props.shoppingListId}/items`)}
+      >
+        Pozycje
+      </Button>
+    </PageTitle>
 
     <ShoppingListEditForm
       shoppingList={shoppingListQuery.data}

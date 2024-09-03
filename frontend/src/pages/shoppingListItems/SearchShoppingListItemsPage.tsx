@@ -24,7 +24,7 @@ const SearchShoppingListItemsPage: FC<{
       toolbarActions={<>
         <Button
           variant="contained"
-          onClick={() => navigate('./@new')}
+          onClick={() => navigate(`/shopping-lists/${props.shoppingListId}/@new-item`)}
         >
           Dodaj
         </Button>

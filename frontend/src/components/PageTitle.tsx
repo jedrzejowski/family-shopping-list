@@ -19,7 +19,7 @@ const PageTitle: FC<{
       <ArrowBackIcon/>
     </IconButton>
 
-    <Typography variant="h6">
+    <Typography variant="h6" sx={{flexGrow: 1}}>
       {props.title}
     </Typography>
 

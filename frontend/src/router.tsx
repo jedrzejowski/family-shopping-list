@@ -42,7 +42,7 @@ const routes: RouteObject[] = [
         },
       },
       {
-        path: "shopping-lists/:id/@newItem",
+        path: "shopping-lists/:id/@new-item",
         Component: () => {
           const {id} = useParams<"id">();
           return <CreateShoppingListItemPage shoppingListId={id!}/>
