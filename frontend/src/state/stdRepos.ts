@@ -3,7 +3,7 @@ import {createRepo} from './_createRepo.tsx';
 
 export const {
   useSearchQuery: useSearchShopQuery,
-  useGetEntity: useGetShopQuery,
+  useGetEntityQuery: useGetShopQuery,
   useCreateEntityMutation: useCreateShopMutation,
   useUpdateEntityMutation: useUpdateShopMutation,
 } = createRepo<model.Shop>('shops', {
@@ -13,9 +13,11 @@ export const {
 
 export const {
   useSearchQuery: useSearchProductQuery,
-  useGetEntity: useGetProductQuery,
+  useGetEntityQuery: useGetProductQuery,
   useCreateEntityMutation: useCreateProductMutation,
   useUpdateEntityMutation: useUpdateProductMutation,
+  useDeleteEntityMutation: useDeleteProductMutation,
+  useDeleteUx: useDeleteProductUx,
   EntityAutocomplete: ProductAutocomplete,
 } = createRepo<model.Product>('products', {
   idField: 'productId',
@@ -24,7 +26,7 @@ export const {
 
 export const {
   useSearchQuery: useSearchShoppingListQuery,
-  useGetEntity: useGetShoppingListQuery,
+  useGetEntityQuery: useGetShoppingListQuery,
   useCreateEntityMutation: useCreateShoppingListMutation,
   useUpdateEntityMutation: useUpdateShoppingListMutation,
 } = createRepo<model.ShoppingList>('shopping-lists', {
@@ -33,7 +35,7 @@ export const {
 });
 
 export const {
-  useGetEntity: useGetShoppingListItemQuery,
+  useGetEntityQuery: useGetShoppingListItemQuery,
   useCreateEntityMutation: useCreateShoppingListItemMutation,
   useUpdateEntityMutation: useUpdateShoppingListItemMutation,
 } = createRepo<model.ShoppingListItem>('shopping-list-items', {

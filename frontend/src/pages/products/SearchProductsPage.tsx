@@ -1,5 +1,9 @@
 import {FC} from "react";
-import {useGetProductQuery, useSearchProductQuery} from "../../state/stdRepos.ts";
+import {
+  useDeleteProductUx,
+  useGetProductQuery,
+  useSearchProductQuery
+} from "../../state/stdRepos.ts";
 import {IconButton, ListItem, ListItemText, colors, Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
@@ -36,6 +40,7 @@ export default SearchProductsPage;
 const ProductItem: FC<{ productId: string }> = props => {
   const navigate = useNavigate();
   const productQuery = useGetProductQuery(props.productId);
+  const deleteUx = useDeleteProductUx(props.productId);
 
   if (productQuery.isPending) {
     return <div>Loading</div>
@@ -45,25 +50,28 @@ const ProductItem: FC<{ productId: string }> = props => {
     return <div>Error</div>
   }
 
-  return <ListItem
-    sx={{
-      pr: (16 + 40 * 2) + 'px',
-      '&:hover': {
-        background: theme => theme.palette.action.hover,
-      }
-    }}
-    secondaryAction={<>
-      <IconButton>
-        <DeleteIcon sx={{color: colors.red[500]}}/>
-      </IconButton>
-      <IconButton
-        onClick={() => navigate(`./${props.productId}`)}
-        edge="end"
-      >
-        <EditIcon/>
-      </IconButton>
-    </>}
-  >
-    <ListItemText primary={productQuery.data.tradeName}/>
-  </ListItem>
+  return <>
+    {deleteUx.dialog}
+    <ListItem
+      sx={{
+        pr: (16 + 40 * 2) + 'px',
+        '&:hover': {
+          background: theme => theme.palette.action.hover,
+        }
+      }}
+      secondaryAction={<>
+        <IconButton onClick={() => deleteUx.start()}>
+          <DeleteIcon sx={{color: colors.red[500]}}/>
+        </IconButton>
+        <IconButton
+          onClick={() => navigate(`./${props.productId}`)}
+          edge="end"
+        >
+          <EditIcon/>
+        </IconButton>
+      </>}
+    >
+      <ListItemText primary={productQuery.data.tradeName}/>
+    </ListItem>
+  </>
 }

@@ -96,4 +96,18 @@ impl CrudRepository<Product> for SqliteDatabase {
 
     Ok(())
   }
+
+  async fn delete(&self, family_context: &FamilyContext, product_id: Uuid) -> Result<()> {
+
+    // language=sqlite
+    sqlx::query("
+      delete from products where family_id = ? and product_id = ?
+    ")
+      .bind(family_context.family_id.to_string())
+      .bind(product_id.to_string())
+      .execute(self.pool())
+      .await?;
+
+    Ok(())
+  }
 }

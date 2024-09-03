@@ -77,6 +77,20 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 
     Ok(())
   }
+
+  async fn delete(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<()> {
+
+    // language=sqlite
+    sqlx::query("
+      delete from shopping_lists where family_id = ? and shopping_list_id = ?
+    ")
+      .bind(family_context.family_id.to_string())
+      .bind(shopping_list_id.to_string())
+      .execute(self.pool())
+      .await?;
+
+    Ok(())
+  }
 }
 
 #[async_trait::async_trait]

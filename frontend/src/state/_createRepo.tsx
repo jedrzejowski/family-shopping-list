@@ -1,18 +1,22 @@
 import {useMutation, useQuery, useQueryClient, UseQueryResult} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
-import {ProviderContext as SnackbarContext, useSnackbar} from 'notistack';
-import {Autocomplete, Box, IconButton, TextField} from "@mui/material";
+import {ProviderContext as SnackbarContext, SnackbarMessage, useSnackbar, VariantType} from 'notistack';
+import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, IconButton, TextField} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useLoadingShroud} from "../LoadingShroud.tsx";
-import {FC, HTMLAttributes, useState} from "react";
+import {FC, HTMLAttributes, useRef, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {SearchQuery} from "../model.ts";
 
-function successSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
+function fastSnackbar(
+  {enqueueSnackbar, closeSnackbar}: SnackbarContext,
+  message: SnackbarMessage,
+  variant: VariantType
+) {
   enqueueSnackbar({
-    message: 'Zapisano',
-    variant: 'success',
+    message: message,
+    variant: variant,
     action: key => <>
       <IconButton
         aria-label="close"
@@ -24,25 +28,14 @@ function successSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
       </IconButton>
     </>
   });
-
 }
 
-function errorSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
-  enqueueSnackbar({
-    message: 'Wystąpił błąd',
-    variant: 'error',
-    action: key => <>
-      <IconButton
-        aria-label="close"
-        color="inherit"
-        sx={{p: 0.5}}
-        onClick={() => closeSnackbar(key)}
-      >
-        <CloseIcon/>
-      </IconButton>
-    </>
-  });
+function successSnackbar(snackbarCtx: SnackbarContext) {
+  fastSnackbar(snackbarCtx, 'Zapisano', 'success');
+}
 
+function errorSnackbar(snackbarCtx: SnackbarContext) {
+  fastSnackbar(snackbarCtx, 'Wystąpił błąd', 'error');
 }
 
 export interface UseSearchQuery<Props extends object = object> {
@@ -82,7 +75,7 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useGetEntity(id: string | null | undefined) {
+  function useGetEntityQuery(id: string | null | undefined) {
     const familyId = useFamilyId();
 
     return useQuery<T>({
@@ -178,13 +171,65 @@ export function createRepo<T>(name: string, args: {
       onError() {
         errorSnackbar(snackbar)
       },
-      onSuccess(data) {
+      onSuccess(id) {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: ['_createRepo', name, data],
-          exact: true,
+          queryKey: ['_createRepo/search', name],
+        }).finally(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['_createRepo', name, id],
+            exact: true,
+          });
+        })
+      },
+      onSettled() {
+        loadingShroud(false);
+      }
+    });
+  }
+
+  function useDeleteEntityMutation() {
+    const familyId = useFamilyId();
+    const snackbar = useSnackbar();
+    const queryClient = useQueryClient();
+    const loadingShroud = useLoadingShroud();
+
+    return useMutation({
+      mutationFn: async (id: string): Promise<string> => {
+        const response = await fetch(`/api/${name}/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'x-family-id': familyId,
+          },
         });
+
+        if (!response.ok) {
+          throw response;
+        }
+
+        return id;
+      },
+      onMutate() {
+        loadingShroud(true);
+      },
+      onError() {
+        errorSnackbar(snackbar)
+      },
+      onSuccess(id) {
+        fastSnackbar(snackbar, 'Usunięto', 'info');
+
+        queryClient.invalidateQueries({
+          queryKey: ['_createRepo/search', name],
+        }).finally(() => {
+          setTimeout(() => {
+
+            queryClient.invalidateQueries({
+              queryKey: ['_createRepo', name, id],
+              exact: true,
+            });
+          }, 100);
+        })
       },
       onSettled() {
         loadingShroud(false);
@@ -196,7 +241,7 @@ export function createRepo<T>(name: string, args: {
     entityId: string;
     optionProps: HTMLAttributes<HTMLLIElement>;
   }> = props => {
-    const getQuery = useGetEntity(props.entityId)
+    const getQuery = useGetEntityQuery(props.entityId)
 
     return <Box
       component="li"
@@ -211,7 +256,7 @@ export function createRepo<T>(name: string, args: {
     onChange: (entityId: string | null) => void;
   }> = props => {
     const queryClient = useQueryClient();
-    useGetEntity(props.value);
+    useGetEntityQuery(props.value);
     const [inputValue, setInputValue] = useState('');
     const searchQuery = useSearchQuery({
       searchText: inputValue,
@@ -247,11 +292,53 @@ export function createRepo<T>(name: string, args: {
     />
   }
 
+  function useDeleteUx(id: string) {
+    const mutation = useDeleteEntityMutation();
+    const getQuery = useGetEntityQuery(id);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const dialogLatch = useRef(false);
+
+    function handleDialogOk() {
+      setIsDialogOpen(false);
+      mutation.mutate(id);
+    }
+
+    function handleDialogCancel() {
+      setIsDialogOpen(false);
+    }
+
+    const dialog = dialogLatch.current ? (
+      <Dialog
+        open={isDialogOpen}
+        onClose={handleDialogCancel}
+      >
+        <DialogTitle>
+          Czy na pewno usunąć '{getQuery.data ? entityToText(getQuery.data) : null}'?
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={handleDialogOk} variant="outlined" color="error">Tak</Button>
+          <Button onClick={handleDialogCancel} autoFocus>Nie</Button>
+        </DialogActions>
+      </Dialog>
+    ) : null;
+
+    function start() {
+      dialogLatch.current = true;
+      setIsDialogOpen(true);
+    }
+
+    return {dialog, start, mutation}
+  }
+
+
   return {
     useSearchQuery,
-    useGetEntity,
+    useGetEntityQuery,
     useUpdateEntityMutation,
     useCreateEntityMutation,
+    useDeleteEntityMutation,
+    useDeleteUx,
     EntityAutocomplete
   };
 }
+

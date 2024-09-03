@@ -5,7 +5,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Json, Router};
 use axum::handler::Handler;
-use axum::routing::{get, post, put};
+use axum::routing::{delete, get, post, put};
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use uuid::Uuid;
@@ -35,6 +35,7 @@ where
       .route("/", post(create_entity::<M>))
       .route("/:shop_id", get(get_entity::<M>))
       .route("/:shop_id", put(update_entity::<M>))
+      .route("/:shop_id", delete(delete_entity::<M>))
   }
 }
 
@@ -60,13 +61,13 @@ where
 
 async fn get_entity<M>(
   family_context: FamilyContext,
-  product_repo: CrudRepositoryBean<M>,
-  Path(product_id): Path<Uuid>,
+  repo: CrudRepositoryBean<M>,
+  Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, StatusCode>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match product_repo.get(&family_context, product_id).await {
+  match repo.get(&family_context, id).await {
     Ok(Some(product)) => Ok(Json(product)),
     Ok(None) => Err(StatusCode::NOT_FOUND),
     Err(err) => {
@@ -107,6 +108,25 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   match repo.update(&family_context, entity).await {
+    Ok(_) => {
+      Ok(StatusCode::ACCEPTED)
+    }
+    Err(err) => {
+      log::error!("{}", err);
+      Err(StatusCode::INTERNAL_SERVER_ERROR)
+    }
+  }
+}
+
+async fn delete_entity<M>(
+  family_context: FamilyContext,
+  repo: CrudRepositoryBean<M>,
+  Path(id): Path<Uuid>,
+) -> Result<impl IntoResponse, StatusCode>
+where
+  M: Serialize + DeserializeOwned + Send,
+{
+  match repo.delete(&family_context, id).await {
     Ok(_) => {
       Ok(StatusCode::ACCEPTED)
     }
