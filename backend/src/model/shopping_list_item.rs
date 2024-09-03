@@ -24,7 +24,7 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     "shoppingListItemId"
   }
 
-  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
+  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
     todo!()
   }
 

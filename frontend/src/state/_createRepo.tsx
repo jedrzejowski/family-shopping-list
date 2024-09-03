@@ -210,6 +210,8 @@ export function createRepo<T>(name: string, args: {
     value: string | null
     onChange: (entityId: string | null) => void;
   }> = props => {
+    const queryClient = useQueryClient();
+    useGetEntity(props.value);
     const [inputValue, setInputValue] = useState('');
     const searchQuery = useSearchQuery({
       searchText: inputValue,
@@ -221,12 +223,18 @@ export function createRepo<T>(name: string, args: {
       value={props.value}
       onChange={(_event, value) => props.onChange(value)}
       inputValue={inputValue}
+      getOptionKey={id => id}
+      getOptionLabel={id => {
+        const query = queryClient.getQueryData(['_createRepo', name, id])
+        return query ? entityToText(query as T) : '';
+      }}
       onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
       renderOption={(props, option) => {
         const {key, ...optionProps} = props;
         return <EntityAutocompleteRenderOption key={key} optionProps={optionProps} entityId={option}/>
       }}
       renderInput={(params) => {
+
         return <TextField
           sx={props.sx}
           {...params}

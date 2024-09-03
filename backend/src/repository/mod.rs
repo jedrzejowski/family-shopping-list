@@ -17,7 +17,7 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   fn id_field(&self) -> &str;
-  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>>;
+  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>>;
   async fn get(&self, family_context: &FamilyContext, id: Uuid) -> Result<Option<M>>;
   async fn create(&self, family_context: &FamilyContext, object: M) -> Result<String>;
   async fn update(&self, family_context: &FamilyContext, object: M) -> Result<()>;

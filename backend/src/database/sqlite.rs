@@ -5,6 +5,7 @@ use crate::model::{SearchParams, SearchResult};
 use sqlx::pool::PoolConnection;
 use sqlx::{ConnectOptions, Encode, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool, Type};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
+use uuid::Uuid;
 use crate::family_context::FamilyContext;
 
 #[derive(Clone)]
@@ -59,7 +60,7 @@ impl SqliteDatabase {
     text_columns: impl AsRef<[&str]>,
     order_by: impl AsRef<[&str]>,
     search_params: SearchParams,
-  ) -> Result<SearchResult<String>> {
+  ) -> Result<SearchResult<Uuid>> {
     if let Some(search_text) = &search_params.search_text {
       let search_text = format!("%{}%", search_text);
       for text_column in text_columns.as_ref() {
@@ -91,9 +92,14 @@ impl SqliteDatabase {
 
       let query = query_builder.build();
 
-      let query = query.map(|row: SqliteRow| {
-        let id: String = row.get(0);
-        id
+      let query = query.try_map(|row: SqliteRow| {
+        let id = Uuid::try_parse(row.get(0)).map_err(|err| {
+          sqlx::Error::ColumnDecode {
+            index: "0".to_string(),
+            source: Box::new(err),
+          }
+        })?;
+        Ok(id)
       });
 
       query.fetch_all(&self.sqlx_pool).await?

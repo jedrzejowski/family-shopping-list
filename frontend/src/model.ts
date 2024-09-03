@@ -1,4 +1,4 @@
-export interface SearchQuery{
+export interface SearchQuery {
   searchText?: string;
   limit: number;
   offset: number;

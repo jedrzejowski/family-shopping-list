@@ -13,7 +13,7 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
     "shoppingListId"
   }
 
-  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
+  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
     // language=sqlite
     let mut qb = sqlx::QueryBuilder::new(
       "select shopping_list_id from shopping_lists where ");
@@ -81,7 +81,7 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 
 #[async_trait::async_trait]
 impl ShoppingListRepository for SqliteDatabase {
-  async fn search_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid, search_params: SearchParams) -> Result<SearchResult<String>> {
+  async fn search_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
 
     // language=sqlite
     let mut qb = sqlx::QueryBuilder::new("

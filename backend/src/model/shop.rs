@@ -24,7 +24,7 @@ impl CrudRepository<Shop> for SqliteDatabase {
     "shopId"
   }
 
-  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<String>> {
+  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
     // language=sqlite
     let mut qb = sqlx::QueryBuilder::new(
       "select shop_id from shops where ");
