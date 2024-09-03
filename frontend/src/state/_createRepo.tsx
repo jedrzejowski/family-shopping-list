@@ -1,4 +1,4 @@
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient, UseQueryResult} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
 import {ProviderContext as SnackbarContext, useSnackbar} from 'notistack';
@@ -7,6 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {useLoadingShroud} from "../LoadingShroud.tsx";
 import {FC, HTMLAttributes, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
+import {SearchQuery} from "../model.ts";
 
 function successSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
   enqueueSnackbar({
@@ -44,20 +45,20 @@ function errorSnackbar({enqueueSnackbar, closeSnackbar}: SnackbarContext) {
 
 }
 
+export interface UseSearchQuery<Props extends object = object> {
+  (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
+}
+
 export function createRepo<T>(name: string, args: {
   idField: keyof T;
   entityToText: (entity: T) => string;
 }) {
   const {idField, entityToText} = args;
 
-  function useSearchQuery(args: {
-    searchText?: string;
-    limit: number;
-    offset: number;
-  }) {
+  const useSearchQuery: UseSearchQuery = (args) => {
     const familyId = useFamilyId();
 
-    return useQuery<model.SearchResult<string>>({
+    return useQuery({
       queryKey: ['_createRepo/search', name, args],
       queryFn: async () => {
         const params = new URLSearchParams();
@@ -77,7 +78,7 @@ export function createRepo<T>(name: string, args: {
         }
 
         return await response.json();
-      }
+      },
     });
   }
 
@@ -217,7 +218,7 @@ export function createRepo<T>(name: string, args: {
 
     return <Autocomplete
       value={props.value}
-      onChange={(_event, value)=> props.onChange(value)}
+      onChange={(_event, value) => props.onChange(value)}
       inputValue={inputValue}
       onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
       renderOption={(props, option) => {

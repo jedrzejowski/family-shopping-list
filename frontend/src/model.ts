@@ -1,5 +1,12 @@
+export interface SearchQuery{
+  searchText?: string;
+  limit: number;
+  offset: number;
+}
+
 export interface SearchResult<T> {
   items: T[];
+  totalCount: number;
 }
 
 export interface Product {

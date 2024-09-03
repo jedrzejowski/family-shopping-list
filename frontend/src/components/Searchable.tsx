@@ -1,28 +1,44 @@
-import {ReactNode, useState} from "react";
-import {UseQueryResult} from "@tanstack/react-query";
-import * as model from '../model.ts';
-import {Box, Divider, List, TextField, Toolbar} from "@mui/material";
+import {ReactElement, ReactNode, useLayoutEffect, useState} from "react";
+import {Box, Divider, List, Pagination, Skeleton, TextField, Toolbar} from "@mui/material";
+import {UseSearchQuery} from "../state/_createRepo.tsx";
 
-function Searchable<
-  UseSearchQueryProps extends {
-    searchText: string;
-    limit: number;
-    offset: number;
-  },
->(props: {
-  useSearchQuery: (args: UseSearchQueryProps) => UseQueryResult<model.SearchResult<string>>;
-  renderItem: (entityId: string) => ReactNode;
-  additionalSearchQueryProps?: Omit<UseSearchQueryProps, "searchText" | "offset" | "limit">;
-  toolbarActions?: ReactNode;
-}) {
+interface SearchableI {
+  <UseSearchQueryProps extends object = object>(props: {
+    useSearchQuery: UseSearchQuery<UseSearchQueryProps>;
+    renderItem: (entityId: string) => ReactNode;
+    additionalSearchQueryProps?: UseSearchQueryProps;
+    toolbarActions?: ReactNode;
+  }): ReactElement;
+}
 
+const Searchable: SearchableI = props => {
+  return <Paginated {...props}/>
+}
+
+export default Searchable;
+
+const Paginated: SearchableI = props => {
   const [searchQueryText, setSearchQueryText] = useState('');
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageCount, setPageCount] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState<number>(1);
   const productListQuery = props.useSearchQuery({
     searchText: searchQueryText,
-    limit: 10,
-    offset: 0,
+    limit: pageSize,
+    offset: (pageNumber - 1) * pageSize,
     ...props.additionalSearchQueryProps,
-  } as UseSearchQueryProps);
+  } as Parameters<typeof props.useSearchQuery>[0]);
+
+  useLayoutEffect(() => {
+    const totalCount = productListQuery.data?.totalCount;
+
+    if (typeof totalCount === 'number') {
+      setPageCount(Math.ceil(totalCount / pageSize));
+    } else {
+      setPageCount(null);
+    }
+
+  }, [productListQuery.data?.totalCount, pageSize]);
 
   return <>
     <Toolbar sx={{display: 'flex'}} disableGutters>
@@ -51,7 +67,20 @@ function Searchable<
         {productListQuery.data.items.map(item => props.renderItem(item))}
       </List>
     )}
+
+    <Divider/>
+    <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
+
+      {pageCount ? (
+        <Pagination
+          page={pageNumber}
+          onChange={(_event, page) => setPageNumber(page)}
+          count={pageCount}
+          color="primary"
+        />
+      ) : (
+        <Skeleton sx={{width: '50%'}}/>
+      )}
+    </Box>
   </>
 }
-
-export default Searchable
