@@ -1,0 +1,9 @@
+{
+  "name": "List zakupów",
+  "short_name": "Lista zakupów",
+  "description": "Lista zakupów",
+  "id": "shopping-list",
+  "start_url": "/",
+  "display": "minimal-ui",
+  "background_color": "#fff"
+}

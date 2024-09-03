@@ -13,7 +13,7 @@ const MainAppDrawerContent: FC<{
 
       setTimeout(() => {
         props.onNavigated?.();
-      }, 400)
+      }, 200)
     }
   }
 

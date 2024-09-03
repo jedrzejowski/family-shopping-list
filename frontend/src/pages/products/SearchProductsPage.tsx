@@ -10,7 +10,7 @@ import PageContainer from "../../components/PageContainer.tsx";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PageTitle from "../../components/PageTitle.tsx";
-import Searchable from "../../components/Searchable.tsx";
+import Searchable from "../../components/Searchable/Searchable.tsx";
 
 
 const SearchProductsPage: FC = () => {

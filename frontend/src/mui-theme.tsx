@@ -1,6 +1,6 @@
 import {createTheme, CssBaseline, useMediaQuery, useTheme} from "@mui/material";
 import {ThemeProvider} from "@mui/material/styles";
-import {FC, ReactNode, useMemo} from "react";
+import {FC, ReactNode, useLayoutEffect, useMemo} from "react";
 import {ReactRouterMuiLink} from "./react-router.tsx";
 
 declare module '@mui/material/styles' {
@@ -27,9 +27,7 @@ export const MyThemeProvider: FC<{
 
   const theme = useMemo(() => {
     return createTheme({
-      zIndex:{
-
-      },
+      zIndex: {},
       breakpoints: {
         values: {
           xs: 0,
@@ -61,6 +59,17 @@ export const MyThemeProvider: FC<{
       },
     });
   }, []);
+
+  useLayoutEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.content = theme.palette.primary.main;
+    document.head.appendChild(meta);
+
+    return () => {
+      document.head.removeChild(meta);
+    }
+  }, [theme]);
 
   return <ThemeProvider theme={theme}>
     <CssBaseline/>

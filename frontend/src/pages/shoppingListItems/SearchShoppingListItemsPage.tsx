@@ -2,10 +2,10 @@ import {FC} from "react";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
-import Searchable from "../../components/Searchable.tsx";
+import Searchable from "../../components/Searchable/Searchable.tsx";
 import {Button, colors, IconButton, ListItem, ListItemText} from "@mui/material";
 import {useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
-import {useGetProductQuery, useGetShoppingListItemQuery} from "../../state/stdRepos.ts";
+import {useGetProductQuery, useGetShoppingListItemQuery, useGetShoppingListQuery} from "../../state/stdRepos.ts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -13,9 +13,10 @@ const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
 }> = props => {
   const navigate = useNavigate();
+  const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
 
   return <PageContainer>
-    <PageTitle title="Pozycje listy zakupowej"/>
+    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>}/>
 
     <Searchable
       useSearchQuery={useShoppingListItemsQuery}
