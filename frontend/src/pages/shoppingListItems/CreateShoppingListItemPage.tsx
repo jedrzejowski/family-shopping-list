@@ -5,7 +5,7 @@ import * as model from "../../model.ts";
 import {NIL} from "uuid";
 import PageTitle from "../../components/PageTitle.tsx";
 import {useNavigate} from "react-router-dom";
-import ShoppingListItemEditForm from "../../components/forms/ShoppingListItemForm.tsx";
+import ShoppingListItemEditForm from "../../components/forms/ShoppingListItemEditForm.tsx";
 
 
 const CreateShoppingListItemPage: FC<{
