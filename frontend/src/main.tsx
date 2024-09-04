@@ -18,6 +18,7 @@ const queryClient = new QueryClient({
   }
 });
 
+window.queryClient = queryClient;
 
 reactRoot.render(
   <StrictMode>

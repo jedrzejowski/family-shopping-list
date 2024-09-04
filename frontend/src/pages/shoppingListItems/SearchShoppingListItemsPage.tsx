@@ -20,7 +20,14 @@ const SearchShoppingListItemsPage: FC<{
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
 
   return <PageContainer>
-    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>}/>
+    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>}>
+      <Button
+        variant="contained"
+        onClick={() => navigate(`/shopping-lists/${props.shoppingListId}`)}
+      >
+        Edytuj listę
+      </Button>
+    </PageTitle>
 
     <Searchable
       useSearchQuery={useShoppingListItemsQuery}

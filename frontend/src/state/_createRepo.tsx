@@ -1,4 +1,11 @@
-import {useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult} from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+  UseQueryResult
+} from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.ts';
 import {ProviderContext as SnackbarContext, SnackbarMessage, useSnackbar, VariantType} from 'notistack';
@@ -54,8 +61,35 @@ export interface UseDeleteUx {
 export function createRepo<T>(name: string, args: {
   idField: keyof T;
   entityToText: (entity: T) => string;
+  postMutationInvalidate?: (args: {
+    mutationType: 'update' | 'create' | 'delete';
+    entityId: string;
+    queryClient: QueryClient;
+    clearSearchOf: (...names: string[]) => void;
+  }) => void;
 }) {
-  const {idField, entityToText} = args;
+  const {idField, entityToText, postMutationInvalidate} = args;
+
+  function handlePostMutationInvalidate(
+    queryClient: QueryClient,
+    mutationType: 'update' | 'create' | 'delete',
+    entityId: string
+  ) {
+    if (!postMutationInvalidate) return;
+
+    postMutationInvalidate({
+      entityId,
+      mutationType,
+      queryClient,
+      clearSearchOf(names) {
+        for (const name of names) {
+          queryClient.invalidateQueries({
+            queryKey: ['_createRepo/search', name],
+          });
+        }
+      }
+    })
+  }
 
   const useSearchQuery: UseSearchQuery = (args) => {
     const familyId = useFamilyId();
@@ -136,13 +170,15 @@ export function createRepo<T>(name: string, args: {
       onError() {
         errorSnackbar(snackbar)
       },
-      onSuccess(data) {
+      onSuccess(entityId) {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
-          queryKey: ['_createRepo', name, data],
+          queryKey: ['_createRepo', name, entityId],
           exact: true,
         });
+
+        handlePostMutationInvalidate(queryClient, 'update', entityId);
       },
       onSettled() {
         loadingShroud(false);
@@ -180,17 +216,19 @@ export function createRepo<T>(name: string, args: {
       onError() {
         errorSnackbar(snackbar)
       },
-      onSuccess(id) {
+      onSuccess(entityId) {
         successSnackbar(snackbar);
 
         queryClient.invalidateQueries({
           queryKey: ['_createRepo/search', name],
         }).finally(() => {
           queryClient.invalidateQueries({
-            queryKey: ['_createRepo', name, id],
+            queryKey: ['_createRepo', name, entityId],
             exact: true,
           });
-        })
+        });
+
+        handlePostMutationInvalidate(queryClient, 'create', entityId);
       },
       onSettled() {
         loadingShroud(false);
@@ -205,8 +243,8 @@ export function createRepo<T>(name: string, args: {
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
-      mutationFn: async (id: string): Promise<string> => {
-        const response = await fetch(`/api/${name}/${id}`, {
+      mutationFn: async (entityId: string): Promise<string> => {
+        const response = await fetch(`/api/${name}/${entityId}`, {
           method: 'DELETE',
           headers: {
             'x-family-id': familyId,
@@ -217,7 +255,7 @@ export function createRepo<T>(name: string, args: {
           throw response;
         }
 
-        return id;
+        return entityId;
       },
       onMutate() {
         loadingShroud(true);
@@ -225,7 +263,7 @@ export function createRepo<T>(name: string, args: {
       onError() {
         errorSnackbar(snackbar)
       },
-      onSuccess(id) {
+      onSuccess(entityId) {
         fastSnackbar(snackbar, 'Usunięto', 'info');
 
         queryClient.invalidateQueries({
@@ -234,11 +272,13 @@ export function createRepo<T>(name: string, args: {
           setTimeout(() => {
 
             queryClient.invalidateQueries({
-              queryKey: ['_createRepo', name, id],
+              queryKey: ['_createRepo', name, entityId],
               exact: true,
             });
           }, 100);
         })
+
+        handlePostMutationInvalidate(queryClient, 'delete', entityId);
       },
       onSettled() {
         loadingShroud(false);
