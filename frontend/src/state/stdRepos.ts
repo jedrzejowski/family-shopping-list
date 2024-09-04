@@ -39,6 +39,7 @@ export const {
   useGetEntityQuery: useGetShoppingListItemQuery,
   useCreateEntityMutation: useCreateShoppingListItemMutation,
   useUpdateEntityMutation: useUpdateShoppingListItemMutation,
+  useDeleteUx: useDeleteShoppingListItemUx,
 } = createRepo<model.ShoppingListItem>('shopping-list-items', {
   idField: 'shoppingListItemId',
   entityToText: () => 'TODO',

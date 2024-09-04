@@ -1,4 +1,4 @@
-import {FC, Fragment, isValidElement, ReactElement, ReactNode} from "react";
+import {FC, Fragment, ReactNode} from "react";
 import {Box, colors, IconButton, ListItem, ListItemButton, ListItemText} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -8,7 +8,7 @@ type SearchableItemAction = {
   icon: 'delete' | 'edit' | ReactNode;
   label: ReactNode;
   handler: () => void;
-} | ReactElement;
+};
 
 const SearchableItem: FC<{
   primaryText: ReactNode;
@@ -20,7 +20,7 @@ const SearchableItem: FC<{
   const secondaryAction = props.secondaryActions
     ? <Box sx={{marginRight: '-16px'}}>{
       props.secondaryActions.map((action) => {
-        if (isValidElement(action)) return action;
+        // eslint-disable-next-line prefer-const
         let {handler, icon} = action;
 
         switch (icon) {

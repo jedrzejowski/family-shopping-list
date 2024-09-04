@@ -3,11 +3,15 @@ import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
 import Searchable from "../../components/Searchable/Searchable.tsx";
-import {Button, colors, IconButton, ListItem, ListItemText} from "@mui/material";
+import {Button} from "@mui/material";
 import {useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
-import {useGetProductQuery, useGetShoppingListItemQuery, useGetShoppingListQuery} from "../../state/stdRepos.ts";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import {
+  useDeleteShoppingListItemUx,
+  useGetProductQuery,
+  useGetShoppingListItemQuery,
+  useGetShoppingListQuery
+} from "../../state/stdRepos.ts";
+import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
@@ -42,6 +46,7 @@ const ShoppingListItem: FC<{
 }> = props => {
   const navigate = useNavigate();
   const shoppingListQuery = useGetShoppingListItemQuery(props.shoppingListItemId);
+  const deleteUx = useDeleteShoppingListItemUx(props.shoppingListItemId);
   const productQuery = useGetProductQuery(shoppingListQuery.data?.productId);
 
   if (shoppingListQuery.isPending || productQuery.isPending) {
@@ -52,25 +57,15 @@ const ShoppingListItem: FC<{
     return <div>Error</div>
   }
 
-  return <ListItem
-    sx={{
-      pr: (16 + 40 * 2) + 'px',
-      '&:hover': {
-        background: theme => theme.palette.action.hover,
-      }
-    }}
-    secondaryAction={<>
-      <IconButton>
-        <DeleteIcon sx={{color: colors.red[500]}}/>
-      </IconButton>
-      <IconButton
-        onClick={() => navigate(`/shopping-list-items/${props.shoppingListItemId}`)}
-        edge="end"
-      >
-        <EditIcon/>
-      </IconButton>
-    </>}
-  >
-    <ListItemText primary={productQuery.data.tradeName}/>
-  </ListItem>
+
+  return <>
+    {deleteUx.dialog}
+    <SearchableItem
+      primaryText={productQuery.data.tradeName}
+      primaryAction={() => navigate(`/shopping-list-items/${props.shoppingListItemId}`)}
+      secondaryActions={[
+        {icon: 'delete', label: 'Usuń', handler: deleteUx.start}
+      ]}
+    />
+  </>
 }

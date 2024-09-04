@@ -49,7 +49,7 @@ const ShoppingList: FC<{ shoppingListId: string }> = props => {
     {deleteUx.dialog}
     <SearchableItem
       primaryText={shoppingListQuery.data.name}
-      primaryAction={() => navigate(`./${props.shoppingListId}`)}
+      primaryAction={() => navigate(`./${props.shoppingListId}/items`)}
       secondaryActions={[
         {icon: 'delete', label: 'Usuń', handler: deleteUx.start}
       ]}

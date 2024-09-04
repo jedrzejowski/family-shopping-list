@@ -8,6 +8,7 @@ import {useLoadingShroud} from "../LoadingShroud.tsx";
 import {FC, HTMLAttributes, ReactElement, useCallback, useRef, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {SearchQuery} from "../model.ts";
+import {NIL} from "uuid";
 
 function fastSnackbar(
   {enqueueSnackbar, closeSnackbar}: SnackbarContext,
@@ -255,7 +256,7 @@ export function createRepo<T>(name: string, args: {
       component="li"
       {...props.optionProps}
     >
-      {getQuery.data ? entityToText(getQuery.data) : 'Loading'}
+      {getQuery.data ? entityToText(getQuery.data) : ''}
     </Box>
   }
 
@@ -264,7 +265,8 @@ export function createRepo<T>(name: string, args: {
     onChange: (entityId: string | null) => void;
   }> = props => {
     const queryClient = useQueryClient();
-    useGetEntityQuery(props.value);
+    const value = props.value === NIL || !props.value ? null : props.value
+    useGetEntityQuery(value);
     const [inputValue, setInputValue] = useState('');
     const searchQuery = useSearchQuery({
       searchText: inputValue,
@@ -273,7 +275,7 @@ export function createRepo<T>(name: string, args: {
     });
 
     return <Autocomplete
-      value={props.value}
+      value={value}
       onChange={(_event, value) => props.onChange(value)}
       inputValue={inputValue}
       getOptionKey={id => id}

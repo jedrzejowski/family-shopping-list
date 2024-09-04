@@ -44,6 +44,11 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
   async fn create(&self, family_context: &FamilyContext, shopping_list_item: ShoppingListItem) -> anyhow::Result<String> {
     let shopping_list_item_id = Uuid::new_v4();
 
+    log::warn!("{} {} {} {}",      family_context.family_id.to_string(),
+      shopping_list_item_id.to_string(),
+      shopping_list_item.shopping_list_id.to_string(),
+      shopping_list_item.product_id.to_string(),);
+
     // language=sqlite
     sqlx::query("
       insert
