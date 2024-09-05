@@ -6,6 +6,7 @@ import {MyThemeProvider} from "./mui-theme.tsx";
 import {SnackbarProvider} from 'notistack';
 import {LoadingShroudProvider} from "./LoadingShroud.tsx";
 import {router} from "./router.tsx";
+import {FamilyIdProvider} from "./state/family.tsx";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -18,19 +19,21 @@ const queryClient = new QueryClient({
   }
 });
 
-window.queryClient = queryClient;
+// window.queryClient = queryClient;
 
 reactRoot.render(
   <StrictMode>
     <MyThemeProvider>
       <SnackbarProvider>
-        <QueryClientProvider client={queryClient}>
-          <LoadingShroudProvider>
+        <FamilyIdProvider>
+          <QueryClientProvider client={queryClient}>
+            <LoadingShroudProvider>
 
-            <RouterProvider router={router}/>
+              <RouterProvider router={router}/>
 
-          </LoadingShroudProvider>
-        </QueryClientProvider>
+            </LoadingShroudProvider>
+          </QueryClientProvider>
+        </FamilyIdProvider>
       </SnackbarProvider>
     </MyThemeProvider>
   </StrictMode>,

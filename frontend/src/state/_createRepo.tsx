@@ -7,7 +7,7 @@ import {
   UseQueryResult
 } from '@tanstack/react-query';
 import * as model from '../model.ts';
-import {useFamilyId} from './family.ts';
+import {useFamilyId} from './family.tsx';
 import {ProviderContext as SnackbarContext, SnackbarMessage, useSnackbar, VariantType} from 'notistack';
 import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, IconButton, TextField} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';

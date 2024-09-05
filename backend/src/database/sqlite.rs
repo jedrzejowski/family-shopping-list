@@ -17,6 +17,7 @@ impl SqliteDatabase {
   pub async fn from_file<T: AsRef<Path>>(path: T) -> Result<Self> {
     let connect_options = SqliteConnectOptions::new()
       .filename(path.as_ref())
+      .create_if_missing(true)
       .log_statements(LevelFilter::Info);
 
     let mut pool_options = SqlitePoolOptions::new();

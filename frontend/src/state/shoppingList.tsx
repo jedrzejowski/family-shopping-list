@@ -1,4 +1,4 @@
-import {useFamilyId} from "./family.ts";
+import {useFamilyId} from "./family.tsx";
 import {useQuery} from "@tanstack/react-query";
 import * as model from "../model.ts";
 import {UseSearchQuery} from "./_createRepo.tsx";
