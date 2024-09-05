@@ -6,9 +6,8 @@ const PageContainer: FC<{
 }> = (props) => {
 
   return <Container>
-
     {props.children}
-  </Container>
+  </Container>;
 }
 
 export default PageContainer;

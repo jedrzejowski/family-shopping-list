@@ -12,6 +12,8 @@ import {
   useGetShoppingListQuery
 } from "../../state/stdRepos.ts";
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
+import PageActions from "../../components/PageActions.tsx";
+import EditIcon from '@mui/icons-material/Edit';
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
@@ -20,14 +22,11 @@ const SearchShoppingListItemsPage: FC<{
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
 
   return <PageContainer>
-    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>}>
-      <Button
-        variant="contained"
-        onClick={() => navigate(`/shopping-lists/${props.shoppingListId}`)}
-      >
-        Edytuj listę
-      </Button>
-    </PageTitle>
+    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>} />
+
+    <PageActions actions={[
+      {icon: <EditIcon fontSize="small"/>, label: 'Edytuj listę', handler: () => navigate(`/shopping-lists/${props.shoppingListId}`)}
+    ]}/>
 
     <Searchable
       useSearchQuery={useShoppingListItemsQuery}

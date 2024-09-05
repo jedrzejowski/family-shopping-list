@@ -44,7 +44,6 @@ export const {
   idField: 'shoppingListItemId',
   entityToText: () => 'TODO',
   postMutationInvalidate({queryClient, entityId}) {
-    console.log({queryKey: ['repo', 'shopping-lists', entityId, 'items',]});
     queryClient.invalidateQueries({queryKey: ['repo', 'shopping-lists/items']});
   }
 });

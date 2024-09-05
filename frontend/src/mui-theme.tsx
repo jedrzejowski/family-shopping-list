@@ -37,7 +37,7 @@ export const MyThemeProvider: FC<{
           xl: 1536,
 
           mobile: 0,
-          desktop: 640,
+          desktop: 600,
         },
       },
       components: {

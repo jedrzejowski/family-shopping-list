@@ -3,15 +3,13 @@ import {
   Box,
   AppBar,
   Toolbar,
-  Typography,
   Drawer,
   SwipeableDrawer,
   Divider,
-  IconButton,
 } from "@mui/material";
 import MainAppDrawerContent from "./MainAppDrawerContent.tsx";
-import MenuIcon from '@mui/icons-material/Menu';
 import {useIsMobileLayout} from "../mui-theme.tsx";
+import MainAppBarToolbar from "./MainAppBarToolbar.tsx";
 
 const drawerWidth = 240;
 
@@ -31,27 +29,7 @@ const MainAppLayout: FC<{
       component="nav"
       sx={{zIndex: (theme) => theme.zIndex.drawer + (isMobileLayout ? -1 : 1)}}
     >
-      <Toolbar>
-
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          onClick={handleOpenDrawer}
-          sx={{display: {desktop: 'none'}, mr: 1}}
-        >
-          <MenuIcon/>
-        </IconButton>
-
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{flexGrow: 1}}
-        >
-          Zakupy rodzinne
-        </Typography>
-
-      </Toolbar>
+      <MainAppBarToolbar onOpenDrawer={handleOpenDrawer}/>
     </AppBar>
 
     {isMobileLayout ? (

@@ -1,13 +1,15 @@
 import {FC, ReactNode} from "react";
-import {IconButton, Toolbar, Typography} from "@mui/material";
+import {Box, IconButton, Toolbar, Typography} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {useNavigate} from "react-router-dom";
+import {usePageContext} from "./PageActions.tsx";
 
 const PageTitle: FC<{
   title: ReactNode;
   children?: ReactNode;
 }> = (props) => {
   const navigate = useNavigate();
+  const {setPageToolbarActionContainer} = usePageContext();
 
   return <Toolbar disableGutters>
 
@@ -23,7 +25,12 @@ const PageTitle: FC<{
       {props.title}
     </Typography>
 
-    {props.children}
+    <Box
+      ref={setPageToolbarActionContainer}
+      sx={{display:'flex', gap: 1}}
+    >
+      {props.children}
+    </Box>
   </Toolbar>
 }
 
