@@ -1,4 +1,4 @@
-import {MouseEvent} from 'react';
+import {MouseEvent, useId} from 'react';
 import {IconButton, Menu, Toolbar, Typography} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {FC, useState} from "react";
@@ -38,6 +38,7 @@ const MainAppBarToolbar: FC<{
 export default MainAppBarToolbar;
 
 const MyMenu: FC = () => {
+  const id = useId();
   const {setPageMenuActionContainer} = usePageContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const isOpen = !!anchorEl;
@@ -52,7 +53,7 @@ const MyMenu: FC = () => {
   return <>
     <IconButton
       size="large"
-      aria-controls={isOpen ? 'basic-menu' : undefined}
+      aria-controls={isOpen ? id : undefined}
       aria-haspopup="true"
       aria-expanded={isOpen ? 'true' : undefined}
       edge="end"
@@ -63,6 +64,7 @@ const MyMenu: FC = () => {
     </IconButton>
 
     <Menu
+      id={id}
       anchorEl={anchorEl}
       anchorOrigin={{vertical: "top", horizontal: "right"}}
       open={isOpen}

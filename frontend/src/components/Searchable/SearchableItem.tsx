@@ -1,14 +1,25 @@
-import {FC, Fragment, ReactNode} from "react";
-import {Box, Checkbox, colors, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import {FC, MouseEvent, ReactNode, useId, useState} from "react";
+import {
+  Box,
+  Checkbox,
+  IconButton,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText, Menu, MenuItem,
+  useMediaQuery,
+  useTheme
+} from "@mui/material";
 import {useIsMobileLayout} from "../../mui-theme.tsx";
+import AppIcon, {AppIconName} from "../AppIcon.tsx";
+import MoreIcon from "@mui/icons-material/MoreVert";
 
 type SearchableItemAction = {
-  icon: 'delete' | 'edit' | ReactNode;
+  icon: AppIconName;
   label: ReactNode;
   handler: () => void;
 };
+
 
 const SearchableItem: FC<{
   checkbox?: boolean | null;
@@ -18,28 +29,72 @@ const SearchableItem: FC<{
   secondaryActions?: SearchableItemAction[];
 }> = props => {
   const isMobileLayout = useIsMobileLayout();
+  const theme = useTheme();
+  const secondaryActionsMenuId = useId();
+  const secondaryActionsAsMenu = useMediaQuery(theme.breakpoints.down('lg'));
+  const [secondaryActionMenuAnchorEl, setSecondaryActionMenuAnchorEl] = useState<HTMLElement | null>(null);
 
-  const secondaryAction = props.secondaryActions
-    ? <Box sx={{marginRight: '-16px'}}>{
-      props.secondaryActions.map((action) => {
-        // eslint-disable-next-line prefer-const
-        let {handler, icon} = action;
 
-        switch (icon) {
-          case "edit":
-            icon = <EditIcon/>;
-            break
-          case "delete":
-            icon = <DeleteIcon sx={{color: colors.red[500]}}/>;
-            break
-        }
+  let lisItemSecondaryAction: ReactNode = null;
+  if (props.secondaryActions && props.secondaryActions.length > 0) {
+    if (secondaryActionsAsMenu) {
+      const isOpen = !!secondaryActionMenuAnchorEl;
 
-        return <IconButton onClick={handler}>
-          {icon}
+      const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+        setSecondaryActionMenuAnchorEl(event.currentTarget);
+      };
+      const handleClose = () => {
+        setSecondaryActionMenuAnchorEl(null);
+      };
+
+      lisItemSecondaryAction = <>
+        <IconButton
+          size="large"
+          aria-controls={isOpen ? secondaryActionsMenuId : undefined}
+          aria-haspopup="true"
+          aria-expanded={isOpen ? 'true' : undefined}
+          edge="end"
+          color="inherit"
+          onClick={handleClick}
+        >
+          <MoreIcon/>
         </IconButton>
-      }).map((elem, i) => <Fragment key={i}>{elem}</Fragment>)
-    }</Box>
-    : undefined;
+
+        <Menu
+          id={secondaryActionsMenuId}
+          anchorEl={secondaryActionMenuAnchorEl}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          open={isOpen}
+          onClose={handleClose}
+        >
+          {props.secondaryActions.map((action, i) => {
+            return <MenuItem key={i} onClick={action.handler}>
+              <ListItemIcon>
+                <AppIcon name={action.icon}/>
+              </ListItemIcon>
+              <ListItemText>{action.label}</ListItemText>
+            </MenuItem>
+          })}
+        </Menu>
+      </>
+
+    } else {
+      lisItemSecondaryAction = <Box sx={{marginRight: '-16px'}}>{
+        props.secondaryActions.map((action, i) => {
+          return <IconButton key={i} onClick={action.handler}>
+            <AppIcon name={action.icon}/>
+          </IconButton>
+        })
+      }</Box>
+    }
+  }
 
   return <ListItem
     disablePadding
@@ -48,7 +103,7 @@ const SearchableItem: FC<{
         background: theme => theme.palette.action.hover,
       } : null
     }}
-    secondaryAction={secondaryAction}
+    secondaryAction={lisItemSecondaryAction}
   >
 
     <ListItemButton
