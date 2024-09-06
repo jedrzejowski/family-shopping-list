@@ -1,5 +1,5 @@
 import {FC, Fragment, ReactNode} from "react";
-import {Box, colors, IconButton, ListItem, ListItemButton, ListItemText} from "@mui/material";
+import {Box, Checkbox, colors, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {useIsMobileLayout} from "../../mui-theme.tsx";
@@ -11,6 +11,8 @@ type SearchableItemAction = {
 };
 
 const SearchableItem: FC<{
+  checkbox?: boolean | null;
+  onCheckboxChanged?: (checked: boolean) => void;
   primaryText: ReactNode;
   primaryAction: () => void;
   secondaryActions?: SearchableItemAction[];
@@ -48,12 +50,35 @@ const SearchableItem: FC<{
     }}
     secondaryAction={secondaryAction}
   >
+
     <ListItemButton
-      onClick={props.primaryAction}
+      onClick={event => {
+        if (
+          props.onCheckboxChanged &&
+          (event.target as HTMLElement).tagName === "INPUT"
+        ) {
+          props.onCheckboxChanged((event.target as HTMLInputElement).checked)
+        } else {
+          props.primaryAction();
+        }
+      }}
       sx={{
         pr: (16 + 40 * (props.secondaryActions?.length ?? 0)) + 'px',
       }}
     >
+
+      {typeof props.checkbox === 'boolean' && (
+        <ListItemIcon>
+          <Checkbox
+            sx={{mt: -1, mb: -1}}
+            edge="start"
+            checked={props.checkbox}
+            tabIndex={-1}
+            disableRipple
+          />
+        </ListItemIcon>
+      )}
+
       <ListItemText primary={props.primaryText}/>
     </ListItemButton>
   </ListItem>

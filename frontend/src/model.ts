@@ -33,5 +33,4 @@ export interface ShoppingListItem {
   shoppingListId: string;
   productId: string;
   isChecked: boolean;
-  sortOrder: number;
 }

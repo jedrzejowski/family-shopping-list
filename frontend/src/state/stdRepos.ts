@@ -43,7 +43,7 @@ export const {
 } = createRepo<model.ShoppingListItem>('shopping-list-items', {
   idField: 'shoppingListItemId',
   entityToText: () => 'TODO',
-  postMutationInvalidate({queryClient, entityId}) {
+  postMutationInvalidate({queryClient}) {
     queryClient.invalidateQueries({queryKey: ['repo', 'shopping-lists/items']});
   }
 });

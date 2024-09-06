@@ -1,7 +1,9 @@
 mod shopping_list;
 mod sqlite_impl;
+mod shopping_list_item;
 
 pub use shopping_list::ShoppingListRepository;
+pub use shopping_list_item::ShoppingListItemRepository;
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;

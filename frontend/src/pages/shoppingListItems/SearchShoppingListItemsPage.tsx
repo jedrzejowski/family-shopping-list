@@ -1,4 +1,4 @@
-import {FC} from "react";
+import {FC, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
@@ -14,6 +14,7 @@ import {
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
+import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.ts";
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
@@ -22,10 +23,14 @@ const SearchShoppingListItemsPage: FC<{
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
 
   return <PageContainer>
-    <PageTitle title={<>Lista <i>{shoppingListQuery.data?.name}</i> - pozycje</>} />
+    <PageTitle title={<>Listy zakupów / {shoppingListQuery.data?.name} / pozycje</>}/>
 
     <PageActions actions={[
-      {icon: <EditIcon fontSize="small"/>, label: 'Edytuj listę', handler: () => navigate(`/shopping-lists/${props.shoppingListId}`)}
+      {
+        icon: <EditIcon fontSize="small"/>,
+        label: 'Edytuj listę',
+        handler: () => navigate(`/shopping-lists/${props.shoppingListId}`)
+      }
     ]}/>
 
     <Searchable
@@ -54,6 +59,7 @@ const ShoppingListItem: FC<{
   const shoppingListQuery = useGetShoppingListItemQuery(props.shoppingListItemId);
   const deleteUx = useDeleteShoppingListItemUx(props.shoppingListItemId);
   const productQuery = useGetProductQuery(shoppingListQuery.data?.productId);
+  const isCheckedMutation = useShoppingListItemIsCheckedMutation();
 
   if (shoppingListQuery.isPending || productQuery.isPending) {
     return <div>Loading</div>
@@ -63,13 +69,19 @@ const ShoppingListItem: FC<{
     return <div>Error</div>
   }
 
-
   return <>
     {deleteUx.dialog}
     <SearchableItem
+      checkbox={shoppingListQuery.data.isChecked}
       primaryText={productQuery.data.tradeName}
-      primaryAction={() => navigate(`/shopping-list-items/${props.shoppingListItemId}`)}
+      primaryAction={() => {
+        isCheckedMutation.mutate({
+          shoppingListItemId: props.shoppingListItemId,
+          isChecked: !shoppingListQuery.data.isChecked,
+        })
+      }}
       secondaryActions={[
+        {icon: 'edit', label: 'Edytuj', handler: () => navigate(`/shopping-list-items/${props.shoppingListItemId}`)},
         {icon: 'delete', label: 'Usuń', handler: deleteUx.start}
       ]}
     />

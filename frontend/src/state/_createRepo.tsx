@@ -8,43 +8,13 @@ import {
 } from '@tanstack/react-query';
 import * as model from '../model.ts';
 import {useFamilyId} from './family.tsx';
-import {ProviderContext as SnackbarContext, SnackbarMessage, useSnackbar, VariantType} from 'notistack';
-import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, IconButton, TextField} from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
+import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, TextField} from "@mui/material";
 import {useLoadingShroud} from "../LoadingShroud.tsx";
 import {FC, HTMLAttributes, ReactElement, useCallback, useRef, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {SearchQuery} from "../model.ts";
 import {NIL} from "uuid";
-
-function fastSnackbar(
-  {enqueueSnackbar, closeSnackbar}: SnackbarContext,
-  message: SnackbarMessage,
-  variant: VariantType
-) {
-  enqueueSnackbar({
-    message: message,
-    variant: variant,
-    action: key => <>
-      <IconButton
-        aria-label="close"
-        color="inherit"
-        sx={{p: 0.5}}
-        onClick={() => closeSnackbar(key)}
-      >
-        <CloseIcon/>
-      </IconButton>
-    </>
-  });
-}
-
-function successSnackbar(snackbarCtx: SnackbarContext) {
-  fastSnackbar(snackbarCtx, 'Zapisano', 'success');
-}
-
-function errorSnackbar(snackbarCtx: SnackbarContext) {
-  fastSnackbar(snackbarCtx, 'Wystąpił błąd', 'error');
-}
+import {useFastSnackbar} from "../hooks/snackbar.tsx";
 
 export interface UseSearchQuery<Props extends object = object> {
   (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
@@ -143,7 +113,7 @@ export function createRepo<T>(name: string, args: {
   function useUpdateEntityMutation() {
     const familyId = useFamilyId();
     const queryClient = useQueryClient();
-    const snackbar = useSnackbar();
+    const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
@@ -168,10 +138,10 @@ export function createRepo<T>(name: string, args: {
         loadingShroud(true);
       },
       onError() {
-        errorSnackbar(snackbar)
+        fastSnackbar('error');
       },
       onSuccess(entityId) {
-        successSnackbar(snackbar);
+        fastSnackbar('saved');
 
         queryClient.invalidateQueries({
           queryKey: ['_createRepo', name, entityId],
@@ -189,7 +159,7 @@ export function createRepo<T>(name: string, args: {
   function useCreateEntityMutation() {
     const familyId = useFamilyId();
     const queryClient = useQueryClient();
-    const snackbar = useSnackbar();
+    const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
@@ -214,10 +184,10 @@ export function createRepo<T>(name: string, args: {
         loadingShroud(true);
       },
       onError() {
-        errorSnackbar(snackbar)
+        fastSnackbar('error')
       },
       onSuccess(entityId) {
-        successSnackbar(snackbar);
+        fastSnackbar('saved');
 
         queryClient.invalidateQueries({
           queryKey: ['_createRepo/search', name],
@@ -238,7 +208,7 @@ export function createRepo<T>(name: string, args: {
 
   function useDeleteEntityMutation() {
     const familyId = useFamilyId();
-    const snackbar = useSnackbar();
+    const fastSnackbar = useFastSnackbar();
     const queryClient = useQueryClient();
     const loadingShroud = useLoadingShroud();
 
@@ -261,10 +231,10 @@ export function createRepo<T>(name: string, args: {
         loadingShroud(true);
       },
       onError() {
-        errorSnackbar(snackbar)
+        fastSnackbar('error')
       },
       onSuccess(entityId) {
-        fastSnackbar(snackbar, 'Usunięto', 'info');
+        fastSnackbar('deleted');
 
         queryClient.invalidateQueries({
           queryKey: ['_createRepo/search', name],

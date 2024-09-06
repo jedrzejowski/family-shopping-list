@@ -1,10 +1,11 @@
 use sqlx::Row;
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
+use anyhow::Result;
 use crate::database::sqlite::SqliteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult, ShoppingListItem};
-use crate::repository::CrudRepository;
+use crate::repository::{CrudRepository, ShoppingListItemRepository};
 
 #[async_trait::async_trait]
 impl CrudRepository<ShoppingListItem> for SqliteDatabase {
@@ -12,11 +13,11 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     "shoppingListItemId"
   }
 
-  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> anyhow::Result<SearchResult<Uuid>> {
+  async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
     todo!()
   }
 
-  async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> anyhow::Result<Option<ShoppingListItem>> {
+  async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingListItem>> {
 
     // language=sqlite
     let mut list = sqlx::query("
@@ -41,7 +42,7 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     Ok(list.pop())
   }
 
-  async fn create(&self, family_context: &FamilyContext, shopping_list_item: ShoppingListItem) -> anyhow::Result<String> {
+  async fn create(&self, family_context: &FamilyContext, shopping_list_item: ShoppingListItem) -> Result<String> {
     let shopping_list_item_id = Uuid::new_v4();
 
     log::warn!("{} {} {} {}",      family_context.family_id.to_string(),
@@ -67,7 +68,7 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     Ok(shopping_list_item_id.to_string())
   }
 
-  async fn update(&self, family_context: &FamilyContext, shopping_list_item: ShoppingListItem) -> anyhow::Result<()> {
+  async fn update(&self, family_context: &FamilyContext, shopping_list_item: ShoppingListItem) -> Result<()> {
     // language=sqlite
     sqlx::query("
       update shopping_list_items
@@ -89,12 +90,31 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     Ok(())
   }
 
-  async fn delete(&self, family_context: &FamilyContext, shopping_list_item_id: Uuid) -> anyhow::Result<()> {
+  async fn delete(&self, family_context: &FamilyContext, shopping_list_item_id: Uuid) -> Result<()> {
 
     // language=sqlite
     sqlx::query("
       delete from shopping_list_items where family_id = ? and shopping_list_item_id = ?
     ")
+      .bind(family_context.family_id.to_string())
+      .bind(shopping_list_item_id.to_string())
+      .execute(self.pool())
+      .await?;
+
+    Ok(())
+  }
+}
+
+#[async_trait::async_trait]
+impl ShoppingListItemRepository for SqliteDatabase {
+  async fn set_is_checked(&self, family_context: &FamilyContext, shopping_list_item_id: Uuid, is_checked: bool) -> Result<()> {
+    // language=sqlite
+    sqlx::query("
+      update shopping_list_items
+      set is_checked = ?
+      where family_id = ? and shopping_list_item_id = ?
+    ")
+      .bind(is_checked)
       .bind(family_context.family_id.to_string())
       .bind(shopping_list_item_id.to_string())
       .execute(self.pool())
