@@ -19,7 +19,6 @@ const CreateShoppingListItemPage: FC<{
     shoppingListId: props.shoppingListId,
     isChecked: false,
     productId: NIL,
-    sortOrder: 0,
   }
 
   function handleSubmit(shoppingListItem: model.ShoppingListItem) {
