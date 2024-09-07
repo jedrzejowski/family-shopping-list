@@ -3,7 +3,7 @@ import {useFamilyId} from './family.tsx';
 export function useFetchApi() {
   const familyId = useFamilyId();
   return async (url: string, init?: RequestInit) => {
-    // await wait(2000);
+    // await wait(2000000);
 
     url = '/api' + url;
 

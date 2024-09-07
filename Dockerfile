@@ -2,7 +2,6 @@ ARG ALPINE_VERSION=3.20
 
 FROM rust:1-alpine${ALPINE_VERSION} AS backend
 
-# Install build dependencies
 RUN apk add --no-cache build-base musl-dev openssl-dev openssl
 
 WORKDIR /app
@@ -36,7 +35,6 @@ RUN npm run build
 RUN ls
 
 FROM alpine:${ALPINE_VERSION}
-
 
 USER 1000:1000
 

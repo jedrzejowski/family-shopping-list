@@ -15,6 +15,7 @@ import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.ts";
+import SearchableItemPlaceholder from "../../components/Searchable/SearchableItemPlaceholder.tsx";
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
@@ -61,19 +62,15 @@ const ShoppingListItem: FC<{
   const productQuery = useGetProductQuery(shoppingListQuery.data?.productId);
   const isCheckedMutation = useShoppingListItemIsCheckedMutation();
 
-  if (shoppingListQuery.isPending || productQuery.isPending) {
-    return <div>Loading</div>
-  }
-
-  if (shoppingListQuery.isError || productQuery.isError) {
-    return <div>Error</div>
+  if (!shoppingListQuery.isSuccess || (!shoppingListQuery.data.productName && !productQuery.isSuccess)) {
+    return <SearchableItemPlaceholder/>;
   }
 
   return <>
     {deleteUx.dialog}
     <SearchableItem
       checkbox={shoppingListQuery.data.isChecked}
-      primaryText={productQuery.data.tradeName}
+      primaryText={shoppingListQuery.data.productName ?? productQuery.data?.tradeName}
       primaryAction={() => {
         isCheckedMutation.mutate({
           shoppingListItemId: props.shoppingListItemId,

@@ -101,7 +101,7 @@ impl ShoppingListRepository for SqliteDatabase {
     let mut qb = sqlx::QueryBuilder::new("
       select shopping_list_item_id
       from shopping_list_items items
-      join main.products p on items.product_id = p.product_id
+      left join main.products p on items.product_id = p.product_id
       where
     ");
     qb.push("items.family_id = ").push_bind(family_context.family_id.to_string());

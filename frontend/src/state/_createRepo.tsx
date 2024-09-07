@@ -7,14 +7,15 @@ import {
   UseQueryResult
 } from '@tanstack/react-query';
 import * as model from '../model.ts';
-import {useFamilyId} from './family.tsx';
 import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, TextField} from "@mui/material";
 import {useLoadingShroud} from "../LoadingShroud.tsx";
-import {FC, HTMLAttributes, ReactElement, useCallback, useRef, useState} from "react";
+import {FC, HTMLAttributes, ReactElement, useCallback, useMemo, useRef, useState} from "react";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {SearchQuery} from "../model.ts";
 import {NIL} from "uuid";
 import {useFastSnackbar} from "../hooks/snackbar.tsx";
+import {uuidRegex} from "../regex.ts";
+import {useFetchApi} from "./fetch.ts";
 
 export interface UseSearchQuery<Props extends object = object> {
   (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
@@ -62,7 +63,7 @@ export function createRepo<T>(name: string, args: {
   }
 
   const useSearchQuery: UseSearchQuery = (args) => {
-    const familyId = useFamilyId();
+    const fetchApi = useFetchApi();
 
     return useQuery({
       queryKey: ['_createRepo/search', name, args],
@@ -72,46 +73,29 @@ export function createRepo<T>(name: string, args: {
         params.set('offset', args.offset.toString());
         if (args.searchText) params.set('searchText', args.searchText);
 
-
-        const response = await fetch(`/api/${name}?` + params.toString(), {
-          headers: {
-            'x-family-id': familyId,
-          }
-        });
-
-        if (response.status !== 200) {
-          throw response;
-        }
-
+        const response = await fetchApi(`/${name}?` + params.toString());
+        if (!response.ok) throw response;
         return await response.json();
       },
     });
   }
 
   function useGetEntityQuery(id: string | null | undefined) {
-    const familyId = useFamilyId();
+    const fetchApi = useFetchApi();
 
     return useQuery<T>({
       queryKey: ['_createRepo', name, id],
       enabled: typeof id === 'string',
       queryFn: async () => {
-        const response = await fetch(`/api/${name}/${id}`, {
-          headers: {
-            'x-family-id': familyId,
-          }
-        });
-
-        if (response.status !== 200) {
-          throw response;
-        }
-
+        const response = await fetchApi(`/${name}/${id}`);
+        if (!response.ok) throw response;
         return await response.json();
       }
     });
   }
 
   function useUpdateEntityMutation() {
-    const familyId = useFamilyId();
+    const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
@@ -119,18 +103,15 @@ export function createRepo<T>(name: string, args: {
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
         const id = entity[idField];
-        const response = await fetch(`/api/${name}/${id}`, {
+        const response = await fetchApi(`/${name}/${id}`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json',
-            'x-family-id': familyId,
+            'content-type': 'application/json',
           },
           body: JSON.stringify(entity),
         });
 
-        if (!response.ok) {
-          throw response;
-        }
+        if (!response.ok) throw response;
 
         return entity[idField] as string;
       },
@@ -157,25 +138,22 @@ export function createRepo<T>(name: string, args: {
   }
 
   function useCreateEntityMutation() {
-    const familyId = useFamilyId();
+    const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
       mutationFn: async (entity: T): Promise<string> => {
-        const response = await fetch(`/api/${name}`, {
+        const response = await fetchApi(`/${name}`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'x-family-id': familyId,
+            'content-type': 'application/json',
           },
           body: JSON.stringify(entity),
         });
 
-        if (!response.ok) {
-          throw response;
-        }
+        if (!response.ok) throw response;
 
         const repo = await response.json();
         return repo[idField] as string;
@@ -207,23 +185,18 @@ export function createRepo<T>(name: string, args: {
   }
 
   function useDeleteEntityMutation() {
-    const familyId = useFamilyId();
+    const fetchApi = useFetchApi();
     const fastSnackbar = useFastSnackbar();
     const queryClient = useQueryClient();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
       mutationFn: async (entityId: string): Promise<string> => {
-        const response = await fetch(`/api/${name}/${entityId}`, {
+        const response = await fetchApi(`/${name}/${entityId}`, {
           method: 'DELETE',
-          headers: {
-            'x-family-id': familyId,
-          },
         });
 
-        if (!response.ok) {
-          throw response;
-        }
+        if (!response.ok) throw response;
 
         return entityId;
       },
@@ -257,26 +230,31 @@ export function createRepo<T>(name: string, args: {
   }
 
   const EntityAutocompleteRenderOption: FC<{
-    entityId: string;
+    option: string;
     optionProps: HTMLAttributes<HTMLLIElement>;
   }> = props => {
-    const getQuery = useGetEntityQuery(props.entityId)
+    const isUuid = uuidRegex.test(props.option);
+    const getQuery = useGetEntityQuery(isUuid ? props.option : null)
 
     return <Box
       component="li"
       {...props.optionProps}
     >
-      {getQuery.data ? entityToText(getQuery.data) : ''}
+      {isUuid && getQuery.data ? entityToText(getQuery.data) : ''}
+      {!isUuid ? <i>{props.option}</i> : null}
     </Box>
   }
 
   const EntityAutocomplete: FC<BaseTextFieldProps & {
     value: string | null
     onChange: (entityId: string | null) => void;
+    allowCustomInput?: boolean;
   }> = props => {
-    const queryClient = useQueryClient();
+    const {allowCustomInput} = props;
+
     const value = props.value === NIL || !props.value ? null : props.value
-    useGetEntityQuery(value);
+    const queryClient = useQueryClient();
+    useGetEntityQuery(value && uuidRegex.test(value) ? value : null);
     const [inputValue, setInputValue] = useState('');
     const searchQuery = useSearchQuery({
       searchText: inputValue,
@@ -284,19 +262,34 @@ export function createRepo<T>(name: string, args: {
       offset: 0,
     });
 
+    const options = useMemo(() => {
+      const options = searchQuery.data?.items ?? [];
+      if (allowCustomInput && inputValue) {
+        return [inputValue, ...options];
+      } else {
+        return options;
+      }
+    }, [searchQuery.data?.items, inputValue, allowCustomInput])
+
     return <Autocomplete
       value={value}
       onChange={(_event, value) => props.onChange(value)}
       inputValue={inputValue}
       getOptionKey={id => id}
-      getOptionLabel={id => {
-        const query = queryClient.getQueryData(['_createRepo', name, id])
-        return query ? entityToText(query as T) : '';
+      getOptionLabel={value => {
+        if (uuidRegex.test(value)) {
+          const query = queryClient.getQueryData(['_createRepo', name, value])
+          return query ? entityToText(query as T) : '';
+        }
+
+        if (allowCustomInput) return value;
+
+        return '';
       }}
       onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
       renderOption={(props, option) => {
         const {key, ...optionProps} = props;
-        return <EntityAutocompleteRenderOption key={key} optionProps={optionProps} entityId={option}/>
+        return <EntityAutocompleteRenderOption key={key} optionProps={optionProps} option={option}/>
       }}
       renderInput={(params) => {
 
@@ -308,7 +301,7 @@ export function createRepo<T>(name: string, args: {
           fullWidth={props.fullWidth}
         />;
       }}
-      options={searchQuery.data?.items ?? []}
+      options={options}
     />
   }
 

@@ -3,10 +3,9 @@ use anyhow::Result;
 use log::LevelFilter;
 use crate::model::{SearchParams, SearchResult};
 use sqlx::pool::PoolConnection;
-use sqlx::{ConnectOptions, Encode, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool, Type};
+use sqlx::{ColumnIndex, ConnectOptions, Encode, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool, Type};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
 use uuid::Uuid;
-use crate::family_context::FamilyContext;
 
 #[derive(Clone)]
 pub struct SqliteDatabase {
@@ -23,6 +22,10 @@ impl SqliteDatabase {
     let mut pool_options = SqlitePoolOptions::new();
 
     let pool = pool_options.connect_with(connect_options).await?;
+
+    sqlx::migrate!("src/database/sqlite-migrations")
+      .run(&pool)
+      .await?;
 
     // .connect("database.sqlite").await?;
 
@@ -53,6 +56,37 @@ impl SqliteDatabase {
 
   pub async fn acquire(&self) -> Result<PoolConnection<Sqlite>> {
     Ok(self.sqlx_pool.acquire().await?)
+  }
+
+  pub fn try_get_uuid_field<I>(&self, row: &SqliteRow, index: I) -> Result<Uuid, sqlx::Error>
+  where
+    I: ColumnIndex<SqliteRow> + Copy,
+  {
+    let field = row.try_get::<String, I>(index)?;
+    match Uuid::try_parse(field.as_str()) {
+      Ok(uuid) => Ok(uuid),
+      Err(err) => Err(sqlx::Error::ColumnDecode {
+        index: format!("{index:?}"),
+        source: Box::new(err),
+      })
+    }
+  }
+
+  pub fn try_get_option_uuid_field<I>(&self, row: &SqliteRow, index: I) -> Result<Option<Uuid>, sqlx::Error>
+  where
+    I: ColumnIndex<SqliteRow> + Copy,
+  {
+    let field = match row.try_get::<Option<String>, I>(index)? {
+      None => return Ok(None),
+      Some(value) => value,
+    };
+    match Uuid::try_parse(field.as_str()) {
+      Ok(uuid) => Ok(Some(uuid)),
+      Err(err) => Err(sqlx::Error::ColumnDecode {
+        index: format!("{index:?}"),
+        source: Box::new(err),
+      })
+    }
   }
 
   pub async fn make_text_search<'args>(
@@ -94,13 +128,7 @@ impl SqliteDatabase {
       let query = query_builder.build();
 
       let query = query.try_map(|row: SqliteRow| {
-        let id = Uuid::try_parse(row.get(0)).map_err(|err| {
-          sqlx::Error::ColumnDecode {
-            index: "0".to_string(),
-            source: Box::new(err),
-          }
-        })?;
-        Ok(id)
+        self.try_get_uuid_field(&row, 0)
       });
 
       query.fetch_all(&self.sqlx_pool).await?

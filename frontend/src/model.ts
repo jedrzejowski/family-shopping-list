@@ -31,6 +31,7 @@ export interface ShoppingList {
 export interface ShoppingListItem {
   shoppingListItemId: string;
   shoppingListId: string;
-  productId: string;
+  productId?: string | null;
+  productName?: string | null;
   isChecked: boolean;
 }

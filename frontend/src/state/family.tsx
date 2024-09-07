@@ -1,5 +1,6 @@
 import {createContext, FC, ReactNode, useContext, useMemo, useState} from 'react';
 import {Box, Button, TextField} from "@mui/material";
+import {uuidRegex} from "../regex.ts";
 
 type CtxValue = ReturnType<typeof useState<string | null>>;
 
@@ -7,8 +8,6 @@ const STORAGE_KEY = 'FAMILY_ID'
 
 const Context = createContext<CtxValue>([null, () => {
 }]);
-
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 let initialFamilyId = localStorage.getItem(STORAGE_KEY);
 if (initialFamilyId && !uuidRegex.test(initialFamilyId)) initialFamilyId = null;

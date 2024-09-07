@@ -6,7 +6,7 @@ use uuid::Uuid;
 pub struct ShoppingListItem {
   pub shopping_list_item_id: Uuid,
   pub shopping_list_id: Uuid,
-  pub sort_order: i32,
-  pub product_id: Uuid,
+  pub product_id: Option<Uuid>,
+  pub product_name: Option<String>,
   pub is_checked: bool,
 }
