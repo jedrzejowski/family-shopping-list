@@ -25,7 +25,6 @@ const EditProductPage: FC<{
     <ProductEditForm
       product={productQuery.data}
       onSubmitChange={(data) => productMutation.mutate(data)}
-      autoFocus
     />
   </PageContainer>
 };

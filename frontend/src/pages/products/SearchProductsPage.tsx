@@ -41,6 +41,10 @@ const ProductItem: FC<{ productId: string }> = props => {
   const productQuery = useGetProductQuery(props.productId);
   const deleteUx = useDeleteProductUx(props.productId);
 
+  const handleEdit = () => {
+    navigate(`./${props.productId}`)
+  }
+
   if (productQuery.isPending) {
     return <div>Loading</div>
   }
@@ -53,9 +57,10 @@ const ProductItem: FC<{ productId: string }> = props => {
     {deleteUx.dialog}
     <SearchableItem
       primaryText={productQuery.data.tradeName}
-      primaryAction={() => navigate(`./${props.productId}`)}
+      primaryAction={handleEdit}
       secondaryActions={[
-        {icon: 'delete', label: 'Usuń',handler: deleteUx.start}
+        {icon: 'delete', label: 'Usuń', handler: deleteUx.start},
+        {icon: 'edit', label: 'Edytuj', handler: handleEdit},
       ]}
     />
   </>

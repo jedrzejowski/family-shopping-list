@@ -2,8 +2,35 @@
   "name": "List zakupów",
   "short_name": "Lista zakupów",
   "description": "Lista zakupów",
-  "id": "shopping-list",
+  "id": "main",
   "start_url": "/",
   "display": "minimal-ui",
-  "background_color": "#fff"
+  "background_color": "#fff",
+  "theme_color": "#fff",
+  "icons": [
+    {
+      "src": "/pwa/icons/48.png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "/pwa/icons/72.png",
+      "sizes": "72x72"
+    },
+    {
+      "src": "/pwa/icons/96.png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/pwa/icons/144.png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/pwa/icons/192.png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/pwa/icons/512.png",
+      "sizes": "512x512"
+    }
+  ]
 }

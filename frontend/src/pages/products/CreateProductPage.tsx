@@ -21,7 +21,9 @@ const CreateProductPage: FC = () => {
   function handleSubmit(product: model.Product) {
     productMutation.mutate(product, {
       onSuccess(productId) {
-        navigate(`/products/${productId}`, {replace: true});
+        navigate(`/products/${productId}`, {
+          replace: true,
+        });
       }
     });
   }

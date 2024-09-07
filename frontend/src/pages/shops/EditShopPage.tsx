@@ -25,7 +25,6 @@ const EditShopPage: FC<{
     <ShopEditForm
       shop={shopQuery.data}
       onSubmitChange={(data) => shopMutation.mutate(data)}
-      autoFocus
     />
   </PageContainer>
 };

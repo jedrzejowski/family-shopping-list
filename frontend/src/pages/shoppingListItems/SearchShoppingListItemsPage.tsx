@@ -1,4 +1,4 @@
-import {FC} from "react";
+import {FC, ReactNode} from "react";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
@@ -66,11 +66,15 @@ const ShoppingListItem: FC<{
     return <SearchableItemPlaceholder/>;
   }
 
+  let primaryText: ReactNode = null;
+  if (shoppingListQuery.data.productName) primaryText = <i>{shoppingListQuery.data.productName}</i>;
+  else if (productQuery.data?.tradeName) primaryText = productQuery.data.tradeName;
+
   return <>
     {deleteUx.dialog}
     <SearchableItem
       checkbox={shoppingListQuery.data.isChecked}
-      primaryText={shoppingListQuery.data.productName ?? productQuery.data?.tradeName}
+      primaryText={primaryText}
       primaryAction={() => {
         isCheckedMutation.mutate({
           shoppingListItemId: props.shoppingListItemId,

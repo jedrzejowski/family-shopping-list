@@ -25,7 +25,6 @@ const EditShoppingListItemPage: FC<{
     <ShoppingListItemEditForm
       shoppingListItem={shoppingListItemQuery.data}
       onSubmitChange={(data) => shoppingListItemMutation.mutate(data)}
-      autoFocus
     />
   </PageContainer>
 };
