@@ -1,5 +1,5 @@
 import {ReactElement, ReactNode} from "react";
-import {UseSearchQuery} from "../../state/_createRepo.tsx";
+import {UseSearchQuery} from "../../state/repo/repo.tsx";
 import PaginatedSearchable from "./PaginatedSearchable.tsx";
 import {useIsMobileLayout} from "../../mui-theme.tsx";
 import ScrollableSearchable from "./ScrollableSearchable.tsx";

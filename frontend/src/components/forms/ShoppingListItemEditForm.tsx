@@ -3,7 +3,7 @@ import * as model from "../../model.ts";
 import {useForm} from "react-hook-form";
 import {Box, Button, Toolbar} from "@mui/material";
 import {ProductAutocomplete} from "../../state/stdRepos.ts";
-import {uuidRegex} from "../../regex.ts";
+import {uuidRegex} from "../../uuid.ts";
 
 
 const ShoppingListItemEditForm: FC<{

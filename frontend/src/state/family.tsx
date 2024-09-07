@@ -1,6 +1,6 @@
 import {createContext, FC, ReactNode, useContext, useMemo, useState} from 'react';
 import {Box, Button, TextField} from "@mui/material";
-import {uuidRegex} from "../regex.ts";
+import {uuidRegex} from "../uuid.ts";
 
 type CtxValue = ReturnType<typeof useState<string | null>>;
 

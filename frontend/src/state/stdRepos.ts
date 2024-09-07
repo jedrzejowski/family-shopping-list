@@ -1,5 +1,5 @@
 import * as model from '../model.ts';
-import {createRepo} from './_createRepo.tsx';
+import {createRepo} from './repo/repo.tsx';
 
 export const {
   useSearchQuery: useSearchShopQuery,

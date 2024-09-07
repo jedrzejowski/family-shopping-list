@@ -1,32 +1,35 @@
 import {
   QueryClient,
-  useMutation,
-  UseMutationResult,
+  useMutation, UseMutationResult,
   useQuery,
   useQueryClient,
   UseQueryResult
 } from '@tanstack/react-query';
-import * as model from '../model.ts';
-import {Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, TextField} from "@mui/material";
-import {useLoadingShroud} from "../LoadingShroud.tsx";
-import {FC, HTMLAttributes, ReactElement, useCallback, useMemo, useRef, useState} from "react";
-import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
-import {SearchQuery} from "../model.ts";
-import {NIL} from "uuid";
-import {useFastSnackbar} from "../hooks/snackbar.tsx";
-import {uuidRegex} from "../regex.ts";
-import {useFetchApi} from "./fetch.ts";
+import * as model from '../../model.ts';
+import {useLoadingShroud} from "../../LoadingShroud.tsx";
+import {SearchQuery} from "../../model.ts";
+import {useFastSnackbar} from "../../hooks/snackbar.tsx";
+import {isUuid} from "../../uuid.ts";
+import {useFetchApi} from "../fetch.ts";
+import {createUseDeleteUx} from "./useDeleteUx.tsx";
+import {createEntityAutocomplete} from "./EntityAutocomplete.tsx";
+
+export interface UseEntityText {
+  (entityId: string | null | undefined): string | null;
+
+  fromQueryClient(queryClient: QueryClient, entityId: string | null | undefined): string | null;
+}
 
 export interface UseSearchQuery<Props extends object = object> {
   (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
 }
 
-export interface UseDeleteUx {
-  (id: string): {
-    dialog: ReactElement | null,
-    start: () => void,
-    mutation: UseMutationResult<string, Error, string, void>
-  }
+export interface UseDeleteEntityMutation {
+  (): UseMutationResult<string, Error, string, void>;
+}
+
+export interface UseGetEntityQuery<M> {
+  (entityId: string | null | undefined): UseQueryResult<M, unknown>;
 }
 
 export function createRepo<T>(name: string, args: {
@@ -40,6 +43,7 @@ export function createRepo<T>(name: string, args: {
   }) => void;
 }) {
   const {idField, entityToText, postMutationInvalidate} = args;
+
 
   function handlePostMutationInvalidate(
     queryClient: QueryClient,
@@ -80,14 +84,14 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useGetEntityQuery(id: string | null | undefined) {
+  const useGetEntityQuery: UseGetEntityQuery<T> = (entityId) => {
     const fetchApi = useFetchApi();
 
-    return useQuery<T>({
-      queryKey: ['_createRepo', name, id],
-      enabled: typeof id === 'string',
+    return useQuery({
+      queryKey: ['_createRepo', name, entityId],
+      enabled: isUuid(entityId),
       queryFn: async () => {
-        const response = await fetchApi(`/${name}/${id}`);
+        const response = await fetchApi(`/${name}/${entityId}`);
         if (!response.ok) throw response;
         return await response.json();
       }
@@ -184,14 +188,14 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useDeleteEntityMutation() {
+  const useDeleteEntityMutation: UseDeleteEntityMutation = () => {
     const fetchApi = useFetchApi();
     const fastSnackbar = useFastSnackbar();
     const queryClient = useQueryClient();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
-      mutationFn: async (entityId: string): Promise<string> => {
+      mutationFn: async (entityId) => {
         const response = await fetchApi(`/${name}/${entityId}`, {
           method: 'DELETE',
         });
@@ -229,129 +233,37 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  const EntityAutocompleteRenderOption: FC<{
-    option: string;
-    optionProps: HTMLAttributes<HTMLLIElement>;
-  }> = props => {
-    const isUuid = uuidRegex.test(props.option);
-    const getQuery = useGetEntityQuery(isUuid ? props.option : null)
+  const useEntityText: UseEntityText = (entityId) => {
+    const query = useGetEntityQuery(entityId);
 
-    return <Box
-      component="li"
-      {...props.optionProps}
-    >
-      {isUuid && getQuery.data ? entityToText(getQuery.data) : ''}
-      {!isUuid ? <i>{props.option}</i> : null}
-    </Box>
-  }
-
-  const EntityAutocomplete: FC<BaseTextFieldProps & {
-    value: string | null
-    onChange: (entityId: string | null) => void;
-    allowCustomInput?: boolean;
-  }> = props => {
-    const {allowCustomInput} = props;
-
-    const value = props.value === NIL || !props.value ? null : props.value
-    const queryClient = useQueryClient();
-    useGetEntityQuery(value && uuidRegex.test(value) ? value : null);
-    const [inputValue, setInputValue] = useState('');
-    const searchQuery = useSearchQuery({
-      searchText: inputValue,
-      limit: 100,
-      offset: 0,
-    });
-
-    const options = useMemo(() => {
-      const options = searchQuery.data?.items ?? [];
-      if (allowCustomInput && inputValue) {
-        return [inputValue, ...options];
-      } else {
-        return options;
-      }
-    }, [searchQuery.data?.items, inputValue, allowCustomInput])
-
-    return <Autocomplete
-      value={value}
-      onChange={(_event, value) => props.onChange(value)}
-      inputValue={inputValue}
-      getOptionKey={id => id}
-      getOptionLabel={value => {
-        if (uuidRegex.test(value)) {
-          const query = queryClient.getQueryData(['_createRepo', name, value])
-          return query ? entityToText(query as T) : '';
-        }
-
-        if (allowCustomInput) return value;
-
-        return '';
-      }}
-      onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
-      renderOption={(props, option) => {
-        const {key, ...optionProps} = props;
-        return <EntityAutocompleteRenderOption key={key} optionProps={optionProps} option={option}/>
-      }}
-      renderInput={(params) => {
-
-        return <TextField
-          sx={props.sx}
-          {...params}
-          label={props.label}
-          margin={props.margin}
-          fullWidth={props.fullWidth}
-        />;
-      }}
-      options={options}
-    />
-  }
-
-  const useDeleteUx: UseDeleteUx = (id: string) => {
-    const mutation = useDeleteEntityMutation();
-    const getQuery = useGetEntityQuery(id);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const dialogLatch = useRef(false);
-
-    function handleDialogOk() {
-      setIsDialogOpen(false);
-      mutation.mutate(id);
+    if (query.data) {
+      return entityToText(query.data);
     }
 
-    function handleDialogCancel() {
-      setIsDialogOpen(false);
-    }
-
-    const dialog = dialogLatch.current ? (
-      <Dialog
-        open={isDialogOpen}
-        onClose={handleDialogCancel}
-      >
-        <DialogTitle>
-          Czy na pewno usunąć '{getQuery.data ? entityToText(getQuery.data) : null}'?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={handleDialogOk} variant="outlined" color="error">Tak</Button>
-          <Button onClick={handleDialogCancel} autoFocus>Nie</Button>
-        </DialogActions>
-      </Dialog>
-    ) : null;
-
-    const start = useCallback(() => {
-      dialogLatch.current = true;
-      setIsDialogOpen(true);
-    }, []);
-
-    return {dialog, start, mutation}
+    return null;
   }
 
+  useEntityText.fromQueryClient = (queryClient, entityId) => {
+    const query = queryClient.getQueryData(['_createRepo', name, entityId])
+    return query ? entityToText(query as T) : null;
+  }
 
   return {
+    useEntityText,
     useSearchQuery,
     useGetEntityQuery,
     useUpdateEntityMutation,
     useCreateEntityMutation,
     useDeleteEntityMutation,
-    useDeleteUx,
-    EntityAutocomplete
+    useDeleteUx: createUseDeleteUx({
+      useEntityText,
+      useGetEntityQuery,
+      useDeleteEntityMutation,
+    }),
+    EntityAutocomplete: createEntityAutocomplete({
+      useEntityText,
+      useSearchQuery,
+    })
   };
 }
 
