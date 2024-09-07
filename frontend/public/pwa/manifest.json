@@ -1,12 +1,10 @@
 {
   "name": "List zakupów",
   "short_name": "Lista zakupów",
-  "description": "Lista zakupów",
-  "id": "main",
   "start_url": "/",
-  "display": "minimal-ui",
+  "display": "standalone",
   "background_color": "#fff",
-  "theme_color": "#fff",
+  "theme_color": "#1976d2",
   "icons": [
     {
       "src": "/pwa/icons/48.png",
@@ -34,3 +32,5 @@
     }
   ]
 }
+
+
