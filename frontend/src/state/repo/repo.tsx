@@ -24,6 +24,14 @@ export interface UseSearchQuery<Props extends object = object> {
   (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
 }
 
+export interface UseCreateEntityMutation<M> {
+  (): UseMutationResult<string, Error, M, void>;
+}
+
+export interface UseUpdateEntityMutation<M> {
+  (): UseMutationResult<string, Error, M, void>;
+}
+
 export interface UseDeleteEntityMutation {
   (): UseMutationResult<string, Error, string, void>;
 }
@@ -32,9 +40,9 @@ export interface UseGetEntityQuery<M> {
   (entityId: string | null | undefined): UseQueryResult<M, unknown>;
 }
 
-export function createRepo<T>(name: string, args: {
-  idField: keyof T;
-  entityToText: (entity: T) => string;
+export function createRepo<M>(name: string, args: {
+  idField: keyof M;
+  entityToText: (entity: M) => string;
   postMutationInvalidate?: (args: {
     mutationType: 'update' | 'create' | 'delete';
     entityId: string;
@@ -43,6 +51,14 @@ export function createRepo<T>(name: string, args: {
   }) => void;
 }) {
   const {idField, entityToText, postMutationInvalidate} = args;
+
+  const makeKeyFor = {
+    search(args?: SearchQuery) {
+      if (args) return ['_createRepo/search', name, args]
+      return ['_createRepo/search', name, args];
+    },
+    getQuery: (entityId: string | null | undefined) => ['_createRepo', name, entityId],
+  }
 
 
   function handlePostMutationInvalidate(
@@ -70,7 +86,7 @@ export function createRepo<T>(name: string, args: {
     const fetchApi = useFetchApi();
 
     return useQuery({
-      queryKey: ['_createRepo/search', name, args],
+      queryKey: makeKeyFor.search(args),
       queryFn: async () => {
         const params = new URLSearchParams();
         params.set('limit', args.limit.toString());
@@ -84,11 +100,11 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  const useGetEntityQuery: UseGetEntityQuery<T> = (entityId) => {
+  const useGetEntityQuery: UseGetEntityQuery<M> = (entityId) => {
     const fetchApi = useFetchApi();
 
     return useQuery({
-      queryKey: ['_createRepo', name, entityId],
+      queryKey: makeKeyFor.getQuery(entityId),
       enabled: isUuid(entityId),
       queryFn: async () => {
         const response = await fetchApi(`/${name}/${entityId}`);
@@ -98,14 +114,14 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useUpdateEntityMutation() {
+  const useUpdateEntityMutation: UseUpdateEntityMutation<M> = () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
-      mutationFn: async (entity: T): Promise<string> => {
+      mutationFn: async (entity: M): Promise<string> => {
         const id = entity[idField];
         const response = await fetchApi(`/${name}/${id}`, {
           method: 'PUT',
@@ -129,7 +145,7 @@ export function createRepo<T>(name: string, args: {
         fastSnackbar('saved');
 
         queryClient.invalidateQueries({
-          queryKey: ['_createRepo', name, entityId],
+          queryKey: makeKeyFor.getQuery(entityId),
           exact: true,
         });
 
@@ -141,14 +157,14 @@ export function createRepo<T>(name: string, args: {
     });
   }
 
-  function useCreateEntityMutation() {
+  const useCreateEntityMutation: UseCreateEntityMutation<M> = () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
     const loadingShroud = useLoadingShroud();
 
     return useMutation({
-      mutationFn: async (entity: T): Promise<string> => {
+      mutationFn: async (entity) => {
         const response = await fetchApi(`/${name}`, {
           method: 'POST',
           headers: {
@@ -172,10 +188,10 @@ export function createRepo<T>(name: string, args: {
         fastSnackbar('saved');
 
         queryClient.invalidateQueries({
-          queryKey: ['_createRepo/search', name],
+          queryKey: makeKeyFor.search(),
         }).finally(() => {
           queryClient.invalidateQueries({
-            queryKey: ['_createRepo', name, entityId],
+            queryKey: makeKeyFor.getQuery(entityId),
             exact: true,
           });
         });
@@ -214,12 +230,12 @@ export function createRepo<T>(name: string, args: {
         fastSnackbar('deleted');
 
         queryClient.invalidateQueries({
-          queryKey: ['_createRepo/search', name],
+          queryKey: makeKeyFor.search(),
         }).finally(() => {
           setTimeout(() => {
 
             queryClient.invalidateQueries({
-              queryKey: ['_createRepo', name, entityId],
+              queryKey: makeKeyFor.getQuery(entityId),
               exact: true,
             });
           }, 100);
@@ -245,7 +261,7 @@ export function createRepo<T>(name: string, args: {
 
   useEntityText.fromQueryClient = (queryClient, entityId) => {
     const query = queryClient.getQueryData(['_createRepo', name, entityId])
-    return query ? entityToText(query as T) : null;
+    return query ? entityToText(query as M) : null;
   }
 
   return {
