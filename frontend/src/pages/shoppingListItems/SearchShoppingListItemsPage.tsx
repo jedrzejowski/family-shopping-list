@@ -2,7 +2,6 @@ import {FC, ReactNode} from "react";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
-import Searchable from "../../components/Searchable/Searchable.tsx";
 import {Button} from "@mui/material";
 import {useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
 import {
@@ -16,12 +15,18 @@ import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.ts";
 import SearchableItemPlaceholder from "../../components/Searchable/SearchableItemPlaceholder.tsx";
+import {useIsMobileLayout} from "../../mui-theme.tsx";
+import ScrollableSearchable from "../../components/Searchable/ScrollableSearchable.tsx";
+import PaginatedSearchable from "../../components/Searchable/PaginatedSearchable.tsx";
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
 }> = props => {
   const navigate = useNavigate();
   const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
+  const isMobileLayout = useIsMobileLayout();
+
+  const Searchable = isMobileLayout ? ScrollableSearchable : PaginatedSearchable;
 
   return <PageContainer>
     <PageTitle title={<>Listy zakupów / {shoppingListQuery.data?.name} / pozycje</>}/>
@@ -46,6 +51,7 @@ const SearchShoppingListItemsPage: FC<{
           Dodaj
         </Button>
       </>}
+      initialPageSize={isMobileLayout ? Infinity : undefined}
     />
 
   </PageContainer>;
@@ -79,6 +85,7 @@ const ShoppingListItem: FC<{
         isCheckedMutation.mutate({
           shoppingListItemId: props.shoppingListItemId,
           isChecked: !shoppingListQuery.data.isChecked,
+          updateSearch: true,
         })
       }}
       secondaryActions={[

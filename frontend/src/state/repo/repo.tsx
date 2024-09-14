@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query';
 import * as model from '../../model.ts';
 import {useLoadingShroud} from "../../LoadingShroud.tsx";
-import {SearchQuery} from "../../model.ts";
+import {SearchParams} from "../../model.ts";
 import {useFastSnackbar} from "../../hooks/snackbar.tsx";
 import {isUuid} from "../../uuid.ts";
 import {useFetchApi} from "../fetch.ts";
@@ -21,7 +21,7 @@ export interface UseEntityText {
 }
 
 export interface UseSearchQuery<Props extends object = object> {
-  (args: SearchQuery & Props): UseQueryResult<model.SearchResult<string>, unknown>;
+  (args: SearchParams & Props): UseQueryResult<model.SearchResult<string>, unknown>;
 }
 
 export interface UseCreateEntityMutation<M> {
@@ -52,10 +52,17 @@ export function createRepo<M>(name: string, args: {
 }) {
   const {idField, entityToText, postMutationInvalidate} = args;
 
-  const makeKeyFor = {
-    search(args?: SearchQuery) {
-      if (args) return ['_createRepo/search', name, args]
-      return ['_createRepo/search', name, args];
+  const makeQueryKeyFor = {
+    search(args?: SearchParams) {
+      if (args) {
+        const {limit, offset, ...rest} = args;
+        if (Object.keys(rest).length > 0) {
+          return ['_createRepo/search', name, {limit, offset}, rest];
+        } else {
+          return ['_createRepo/search', name, {limit, offset}];
+        }
+      }
+      return ['_createRepo/search', name];
     },
     getQuery: (entityId: string | null | undefined) => ['_createRepo', name, entityId],
   }
@@ -86,7 +93,7 @@ export function createRepo<M>(name: string, args: {
     const fetchApi = useFetchApi();
 
     return useQuery({
-      queryKey: makeKeyFor.search(args),
+      queryKey: makeQueryKeyFor.search(args),
       queryFn: async () => {
         const params = new URLSearchParams();
         params.set('limit', args.limit.toString());
@@ -104,7 +111,7 @@ export function createRepo<M>(name: string, args: {
     const fetchApi = useFetchApi();
 
     return useQuery({
-      queryKey: makeKeyFor.getQuery(entityId),
+      queryKey: makeQueryKeyFor.getQuery(entityId),
       enabled: isUuid(entityId),
       queryFn: async () => {
         const response = await fetchApi(`/${name}/${entityId}`);
@@ -113,6 +120,12 @@ export function createRepo<M>(name: string, args: {
       }
     });
   }
+
+  const getAllCachedEntities = (queryClient: QueryClient) => {
+    return queryClient.getQueriesData<M>({
+      queryKey: ['_createRepo', name]
+    }).map(it => it[1]);
+  };
 
   const useUpdateEntityMutation: UseUpdateEntityMutation<M> = () => {
     const fetchApi = useFetchApi();
@@ -145,7 +158,7 @@ export function createRepo<M>(name: string, args: {
         fastSnackbar('saved');
 
         queryClient.invalidateQueries({
-          queryKey: makeKeyFor.getQuery(entityId),
+          queryKey: makeQueryKeyFor.getQuery(entityId),
           exact: true,
         });
 
@@ -188,10 +201,10 @@ export function createRepo<M>(name: string, args: {
         fastSnackbar('saved');
 
         queryClient.invalidateQueries({
-          queryKey: makeKeyFor.search(),
+          queryKey: makeQueryKeyFor.search(),
         }).finally(() => {
           queryClient.invalidateQueries({
-            queryKey: makeKeyFor.getQuery(entityId),
+            queryKey: makeQueryKeyFor.getQuery(entityId),
             exact: true,
           });
         });
@@ -230,12 +243,12 @@ export function createRepo<M>(name: string, args: {
         fastSnackbar('deleted');
 
         queryClient.invalidateQueries({
-          queryKey: makeKeyFor.search(),
+          queryKey: makeQueryKeyFor.search(),
         }).finally(() => {
           setTimeout(() => {
 
             queryClient.invalidateQueries({
-              queryKey: makeKeyFor.getQuery(entityId),
+              queryKey: makeQueryKeyFor.getQuery(entityId),
               exact: true,
             });
           }, 100);
@@ -265,6 +278,8 @@ export function createRepo<M>(name: string, args: {
   }
 
   return {
+    getAllCachedEntities,
+    makeQueryKeyFor,
     useEntityText,
     useSearchQuery,
     useGetEntityQuery,

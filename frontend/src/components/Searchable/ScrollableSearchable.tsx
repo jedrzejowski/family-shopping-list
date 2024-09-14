@@ -11,11 +11,12 @@ import {
 import {SearchableFC, SearchableProps} from "./Searchable.tsx";
 
 const ScrollableSearchable: SearchableFC = props => {
+  const [pageSize] = useState(props.initialPageSize ?? 10);
   const [searchQueryText, setSearchQueryText] = useState('');
   const [pages, setPages] = useState<{ limit: number; offset: number }[]>([]);
 
   useLayoutEffect(() => {
-    setPages([{offset: 0, limit: 10}]);
+    setPages([{offset: 0, limit: pageSize}]);
   }, [searchQueryText]);
 
 
@@ -23,7 +24,7 @@ const ScrollableSearchable: SearchableFC = props => {
     setPages(pages => {
       let offset = 0;
       for (const page of pages) offset += page.limit;
-      return [...pages, {limit: 10, offset}];
+      return [...pages, {limit: pageSize, offset}];
     })
   }, []);
 

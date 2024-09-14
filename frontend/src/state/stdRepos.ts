@@ -36,7 +36,9 @@ export const {
 });
 
 export const {
+  makeQueryKeyFor: makeQueryKeyForShoppingListItem,
   useGetEntityQuery: useGetShoppingListItemQuery,
+  getAllCachedEntities: getAllCachedShoppingListItems,
   useCreateEntityMutation: useCreateShoppingListItemMutation,
   useUpdateEntityMutation: useUpdateShoppingListItemMutation,
   useDeleteUx: useDeleteShoppingListItemUx,

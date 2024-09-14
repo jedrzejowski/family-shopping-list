@@ -1,9 +1,9 @@
 use std::path::Path;
 use anyhow::Result;
 use log::LevelFilter;
-use crate::model::{SearchParams, SearchResult};
+use crate::model::{SearchParams, SearchParamsLimit, SearchResult};
 use sqlx::pool::PoolConnection;
-use sqlx::{ColumnIndex, ConnectOptions, Encode, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool, Type};
+use sqlx::{ColumnIndex, ConnectOptions, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
 use uuid::Uuid;
 
@@ -117,13 +117,23 @@ impl SqliteDatabase {
       let order_by = order_by.as_ref();
       if order_by.len() > 0 {
         query_builder.push(" order by ");
+        let mut is_first = true;
+
         for order_by in order_by {
-          query_builder.push(order_by).push(" asc ");
+          if is_first {
+            is_first = false;
+          } else {
+            query_builder.push(", ");
+          }
+
+          query_builder.push(order_by);
         }
       }
 
-      query_builder.push(" limit ").push_bind(search_params.limit);
-      query_builder.push(" offset ").push_bind(search_params.offset);
+      if let SearchParamsLimit::Number(limit) = &search_params.limit {
+        query_builder.push(" limit ").push_bind(*limit as i64);
+        query_builder.push(" offset ").push_bind(search_params.offset as i64);
+      }
 
       let query = query_builder.build();
 
@@ -140,16 +150,44 @@ impl SqliteDatabase {
       let query = query_builder.build();
 
       let query = query.map(|row: SqliteRow| {
-        let id: u32 = row.get(0);
+        let id: i64 = row.get(0);
         id
       });
 
       query.fetch_one(&self.sqlx_pool).await?
     };
 
+    let mut next_page_params: Option<SearchParams> = None;
+    let mut previous_page_params: Option<SearchParams> = None;
+
+    match &search_params.limit {
+      SearchParamsLimit::Number(limit) => {
+        if total_count < (search_params.offset + limit) as i64 {
+          next_page_params = Some(SearchParams {
+            search_text: search_params.search_text.clone(),
+            limit: SearchParamsLimit::Number(*limit),
+            offset: search_params.offset + limit,
+          });
+        }
+
+        if search_params.offset > 0 {
+          let offset = search_params.offset - limit;
+          previous_page_params = Some(SearchParams {
+            search_text: search_params.search_text.clone(),
+            limit: SearchParamsLimit::Number(*limit),
+            offset,
+          });
+        }
+      }
+      SearchParamsLimit::Infinity => {}
+    }
+
     Ok(SearchResult {
+      search_params,
       items,
-      total_count,
+      total_count: total_count as usize,
+      next_page_params,
+      previous_page_params,
     })
   }
 }

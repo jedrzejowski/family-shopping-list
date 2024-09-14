@@ -15,12 +15,12 @@ const reactRoot = createRoot(root);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000
+      staleTime: Infinity,
     }
   }
 });
 
-// window.queryClient = queryClient;
+window.queryClient = queryClient;
 
 reactRoot.render(
   <StrictMode>

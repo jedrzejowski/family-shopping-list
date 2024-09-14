@@ -2,6 +2,9 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useFetchApi} from './fetch.ts';
 import * as model from '../model.ts';
 import {useFastSnackbar} from '../hooks/snackbar.tsx';
+import {getAllCachedShoppingListItems, makeQueryKeyForShoppingListItem} from './stdRepos.ts';
+import {SearchResult} from '../model.ts';
+import {createQueryKeyForShoppingListItemsQuery} from './shoppingList.tsx';
 
 export function useShoppingListItemIsCheckedMutation() {
   const fetchApi = useFetchApi();
@@ -9,7 +12,7 @@ export function useShoppingListItemIsCheckedMutation() {
   const fastSnackbar = useFastSnackbar();
 
   return useMutation({
-    mutationFn: async (variables: { shoppingListItemId: string; isChecked: boolean }) => {
+    mutationFn: async (variables: { shoppingListItemId: string; isChecked: boolean; updateSearch: boolean }) => {
       const pathSuffix = variables.isChecked ? 'check' : 'uncheck';
       const response = await fetchApi(`/shopping-list-items/${variables.shoppingListItemId}/${pathSuffix}`, {
         method: 'POST',
@@ -24,10 +27,13 @@ export function useShoppingListItemIsCheckedMutation() {
     onMutate(variables) {
       let dataBefore: model.ShoppingListItem | null = null;
 
+      let shoppingListId: string | null = null;
+
       queryClient.setQueryData(
-        ['_createRepo', 'shopping-list-items', variables.shoppingListItemId],
+        makeQueryKeyForShoppingListItem.getQuery(variables.shoppingListItemId),
         (data: model.ShoppingListItem | undefined) => {
           if (data) {
+            shoppingListId = data.shoppingListId;
             dataBefore = data;
             data = {
               ...data,
@@ -37,13 +43,29 @@ export function useShoppingListItemIsCheckedMutation() {
           return data;
         });
 
+      if (variables.updateSearch && shoppingListId) {
+        queryClient.setQueryData(
+          createQueryKeyForShoppingListItemsQuery({
+            shoppingListId,
+            limit: Infinity,
+            offset: 0
+          }),
+          (data: SearchResult<string>) => {
+            if (data) {
+              // const allItems = getAllCachedShoppingListItems(queryClient);
+
+            }
+            return data;
+          });
+      }
+
       return {dataBefore};
     },
     onError(_error, variables, context) {
       if (context?.dataBefore) {
 
         queryClient.setQueryData(
-          ['_createRepo', 'shopping-list-items', variables.shoppingListItemId],
+          makeQueryKeyForShoppingListItem.getQuery(variables.shoppingListItemId),
           context.dataBefore);
       }
 

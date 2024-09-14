@@ -19,7 +19,7 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
       "select shopping_list_id from shopping_lists where ");
     qb.push("family_id = ").push_bind(family_context.family_id.to_string());
 
-    self.make_text_search(qb, ["name"], ["shopping_list_id"], search_params).await
+    self.make_text_search(qb, ["name"], ["shopping_list_id asc"], search_params).await
   }
 
   async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingList>> {
@@ -95,7 +95,12 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 
 #[async_trait::async_trait]
 impl ShoppingListRepository for SqliteDatabase {
-  async fn search_items(&self, family_context: &FamilyContext, shopping_list_id: Uuid, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
+  async fn search_items(
+    &self,
+    family_context: &FamilyContext,
+    shopping_list_id: Uuid,
+    search_params: SearchParams
+  ) -> Result<SearchResult<Uuid>> {
 
     // language=sqlite
     let mut qb = sqlx::QueryBuilder::new("
@@ -107,6 +112,11 @@ impl ShoppingListRepository for SqliteDatabase {
     qb.push("items.family_id = ").push_bind(family_context.family_id.to_string());
     qb.push("and items.shopping_list_id = ").push_bind(shopping_list_id.to_string());
 
-    self.make_text_search(qb, ["p.trade_name"], ["shopping_list_item_id"], search_params).await
+    self.make_text_search(
+      qb,
+      ["p.trade_name"],
+      ["is_checked asc", "shopping_list_item_id asc"],
+      search_params
+    ).await
   }
 }

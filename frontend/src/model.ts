@@ -1,12 +1,16 @@
-export interface SearchQuery {
+export interface SearchParams {
   searchText?: string;
   limit: number;
   offset: number;
+
 }
 
 export interface SearchResult<T> {
+  searchParams: SearchParams;
   items: T[];
   totalCount: number;
+  nextPageParams?: SearchParams;
+  previousPageParams?: SearchParams;
 }
 
 export interface Product {

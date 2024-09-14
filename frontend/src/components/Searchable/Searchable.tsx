@@ -10,6 +10,7 @@ export interface SearchableFC {
     renderItem: (entityId: string) => ReactNode;
     additionalSearchQueryProps?: UseSearchQueryProps;
     toolbarActions?: ReactNode;
+    initialPageSize?: number;
   }): ReactElement;
 }
 
