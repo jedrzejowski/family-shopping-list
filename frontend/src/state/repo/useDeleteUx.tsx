@@ -1,6 +1,6 @@
 import {ReactElement, useCallback, useRef, useState} from "react";
 import {UseMutationResult} from "@tanstack/react-query";
-import {UseDeleteEntityMutation, UseEntityText, UseGetEntityQuery} from "./repo.tsx";
+import {UseDeleteEntityMutation, UseText, UseGetEntityQuery} from "./repo.tsx";
 import {Button, Dialog, DialogActions, DialogTitle} from "@mui/material";
 
 export interface UseDeleteUx {
@@ -12,14 +12,14 @@ export interface UseDeleteUx {
 }
 
 export function createUseDeleteUx<M>(args: {
-  useEntityText: UseEntityText;
-  useDeleteEntityMutation: UseDeleteEntityMutation;
-  useGetEntityQuery: UseGetEntityQuery<M>;
+  useText: UseText;
+  useDeleteMutation: UseDeleteEntityMutation;
+  useGetQuery: UseGetEntityQuery<M>;
 }): UseDeleteUx {
 
   return (id) => {
-    const entityText = args.useEntityText(id);
-    const mutation = args.useDeleteEntityMutation();
+    const entityText = args.useText(id);
+    const mutation = args.useDeleteMutation();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const dialogLatch = useRef(false);
 

@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useDeleteShopUx, useGetShopQuery, useSearchShopQuery} from "../../state/stdRepos.ts";
+import {shopsRepo} from "../../state/stdRepos.ts";
 import {Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
@@ -15,7 +15,7 @@ const SearchShopsPage: FC = () => {
     <PageTitle title="Produkty"/>
 
     <Searchable
-      useSearchQuery={useSearchShopQuery}
+      useSearchQuery={shopsRepo.useSearchQuery}
       renderItem={productId => <ShopItem key={productId} shopId={productId}/>}
       toolbarActions={<>
         <Button
@@ -33,8 +33,8 @@ export default SearchShopsPage;
 
 const ShopItem: FC<{ shopId: string }> = props => {
   const navigate = useNavigate();
-  const shopQuery = useGetShopQuery(props.shopId);
-  const deleteUx = useDeleteShopUx(props.shopId);
+  const shopQuery = shopsRepo.useGetQuery(props.shopId);
+  const deleteUx = shopsRepo.useDeleteUx(props.shopId);
 
   const handleEdit = () => {
     navigate(`./${props.shopId}`)

@@ -2,7 +2,6 @@ export interface SearchParams {
   searchText?: string;
   limit: number;
   offset: number;
-
 }
 
 export interface SearchResult<T> {

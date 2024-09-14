@@ -2,7 +2,7 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useFetchApi} from './fetch.ts';
 import * as model from '../model.ts';
 import {useFastSnackbar} from '../hooks/snackbar.tsx';
-import {makeQueryKeyForShoppingListItem} from './stdRepos.ts';
+import {shoppingListItemsRepo} from './stdRepos.ts';
 import {SearchResult} from '../model.ts';
 import {createQueryKeyForShoppingListItemsQuery} from './shoppingList.tsx';
 
@@ -30,7 +30,7 @@ export function useShoppingListItemIsCheckedMutation() {
       let shoppingListId: string | null = null;
 
       queryClient.setQueryData(
-        makeQueryKeyForShoppingListItem.getQuery(variables.shoppingListItemId),
+        shoppingListItemsRepo.makeQueryKeyFor.getQuery(variables.shoppingListItemId),
         (data: model.ShoppingListItem | undefined) => {
           if (data) {
             shoppingListId = data.shoppingListId;
@@ -72,7 +72,7 @@ export function useShoppingListItemIsCheckedMutation() {
       if (context?.dataBefore) {
 
         queryClient.setQueryData(
-          makeQueryKeyForShoppingListItem.getQuery(variables.shoppingListItemId),
+          shoppingListItemsRepo.makeQueryKeyFor.getQuery(variables.shoppingListItemId),
           context.dataBefore);
       }
 

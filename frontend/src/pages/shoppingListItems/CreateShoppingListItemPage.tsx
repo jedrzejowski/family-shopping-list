@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useCreateShoppingListItemMutation} from "../../state/stdRepos.ts";
+import {shoppingListItemsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import * as model from "../../model.ts";
 import {NIL} from "uuid";
@@ -12,7 +12,7 @@ const CreateShoppingListItemPage: FC<{
   shoppingListId: string;
 }> = props => {
   const navigate = useNavigate();
-  const shoppingListItemMutation = useCreateShoppingListItemMutation();
+  const shoppingListItemMutation = shoppingListItemsRepo.useCreateMutation();
 
   const baseNewShoppingListItem: model.ShoppingListItem = {
     shoppingListItemId: NIL,

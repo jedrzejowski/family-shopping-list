@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useCreateProductMutation} from "../../state/stdRepos.ts";
+import {productsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ProductEditForm from "../../components/forms/ProductEditForm.tsx";
 import * as model from "../../model.ts";
@@ -10,7 +10,7 @@ import {useNavigate} from "react-router-dom";
 
 const CreateProductPage: FC = () => {
   const navigate = useNavigate();
-  const productMutation = useCreateProductMutation();
+  const productMutation = productsRepo.useCreateMutation();
 
   const baseNewProduct: model.Product = {
     productId: NIL,

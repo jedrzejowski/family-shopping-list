@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useCreateShopMutation} from "../../state/stdRepos.ts";
+import {shopsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ShopEditForm from "../../components/forms/ShopEditForm.tsx";
 import * as model from "../../model.ts";
@@ -10,7 +10,7 @@ import {useNavigate} from "react-router-dom";
 
 const CreateShopPage: FC = () => {
   const navigate = useNavigate();
-  const shopMutation = useCreateShopMutation();
+  const shopMutation = shopsRepo.useCreateMutation();
 
   const baseNewShop: model.Shop = {
     shopId: NIL,

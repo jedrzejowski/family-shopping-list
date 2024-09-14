@@ -1,9 +1,5 @@
 import {FC} from "react";
-import {
-  useDeleteProductUx,
-  useGetProductQuery,
-  useSearchProductQuery
-} from "../../state/stdRepos.ts";
+import {productsRepo} from "../../state/stdRepos.ts";
 import {Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
@@ -19,7 +15,7 @@ const SearchProductsPage: FC = () => {
     <PageTitle title="Produkty"/>
 
     <Searchable
-      useSearchQuery={useSearchProductQuery}
+      useSearchQuery={productsRepo.useSearchQuery}
       renderItem={productId => <ProductItem key={productId} productId={productId}/>}
       toolbarActions={<>
         <Button
@@ -38,8 +34,8 @@ export default SearchProductsPage;
 
 const ProductItem: FC<{ productId: string }> = props => {
   const navigate = useNavigate();
-  const productQuery = useGetProductQuery(props.productId);
-  const deleteUx = useDeleteProductUx(props.productId);
+  const productQuery = productsRepo.useGetQuery(props.productId);
+  const deleteUx = productsRepo.useDeleteUx(props.productId);
 
   const handleEdit = () => {
     navigate(`./${props.productId}`)

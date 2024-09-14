@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 import {FC, useCallback, useEffect, useLayoutEffect, useState} from "react";
 import {
   Box,
@@ -15,6 +14,7 @@ const ScrollableSearchable: SearchableFC = props => {
   const [pageSize] = useState(props.initialPageSize ?? 10);
   const [searchQueryText, setSearchQueryText] = useState('');
   const [pages, setPages] = useState<{ limit: number; offset: number }[]>([]);
+
 
   useLayoutEffect(() => {
     setPages([{offset: 0, limit: pageSize}]);
@@ -92,7 +92,7 @@ const Page: FC<{
     limit,
     offset,
     ...props.parentProps.additionalSearchQueryProps,
-  } as Parameters<typeof props.parentProps.useSearchQuery>[0]);
+  });
 
   if (productListQuery.isPending) {
     return <ListItem>

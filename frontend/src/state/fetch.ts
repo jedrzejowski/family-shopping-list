@@ -3,10 +3,10 @@ import {useQuery} from '@tanstack/react-query';
 
 export function useFetchApi() {
   const familyId = useFamilyId();
-  return async (url: string, init?: RequestInit) => {
+  return async (path: string | [string, object], init?: RequestInit) => {
     // await wait(2000000);
 
-    url = '/api' + url;
+    const url = '/api' + path;
 
     const headers = init?.headers ?? {};
 

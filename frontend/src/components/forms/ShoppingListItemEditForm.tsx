@@ -2,7 +2,7 @@ import {FC, useState} from "react";
 import * as model from "../../model.ts";
 import {useForm} from "react-hook-form";
 import {Box, Button, Toolbar} from "@mui/material";
-import {ProductAutocomplete} from "../../state/stdRepos.ts";
+import {shoppingListsRepo} from "../../state/stdRepos.ts";
 import {uuidRegex} from "../../uuid.ts";
 
 
@@ -42,7 +42,7 @@ const ShoppingListItemEditForm: FC<{
 
   return <>
 
-    <ProductAutocomplete
+    <shoppingListsRepo.EntityAutocomplete
       allowCustomInput
       label="Produkt"
       fullWidth

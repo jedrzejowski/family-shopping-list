@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useGetShopQuery, useUpdateShopMutation} from "../../state/stdRepos.ts";
+import {shopsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ShopEditForm from "../../components/forms/ShopEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
@@ -7,8 +7,8 @@ import PageTitle from "../../components/PageTitle.tsx";
 const EditShopPage: FC<{
   shopId: string;
 }> = props => {
-  const shopQuery = useGetShopQuery(props.shopId);
-  const shopMutation = useUpdateShopMutation();
+  const shopQuery = shopsRepo.useGetQuery(props.shopId);
+  const shopMutation = shopsRepo.useUpdateMutation();
 
   if (shopQuery.isPending) {
     return <div>Loading</div>

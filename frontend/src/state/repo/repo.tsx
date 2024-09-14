@@ -1,11 +1,11 @@
 import {
   QueryClient,
-  useMutation, UseMutationResult,
+  useMutation,
+  UseMutationResult, useQueries,
   useQuery,
   useQueryClient,
   UseQueryResult
 } from '@tanstack/react-query';
-import * as model from '../../model.ts';
 import {useLoadingShroud} from "../../LoadingShroud.tsx";
 import {SearchParams} from "../../model.ts";
 import {useFastSnackbar} from "../../hooks/snackbar.tsx";
@@ -13,15 +13,12 @@ import {isUuid} from "../../uuid.ts";
 import {useFetchApi} from "../fetch.ts";
 import {createUseDeleteUx} from "./useDeleteUx.tsx";
 import {createEntityAutocomplete} from "./EntityAutocomplete.tsx";
+import {UseSearchQueries, UseSearchQuery} from "./searchQuery.ts";
 
-export interface UseEntityText {
+export interface UseText {
   (entityId: string | null | undefined): string | null;
 
   fromQueryClient(queryClient: QueryClient, entityId: string | null | undefined): string | null;
-}
-
-export interface UseSearchQuery<Props extends object = object> {
-  (args: SearchParams & Props): UseQueryResult<model.SearchResult<string>, unknown>;
 }
 
 export interface UseCreateEntityMutation<M> {
@@ -95,19 +92,29 @@ export function createRepo<M>(name: string, args: {
     return useQuery({
       queryKey: makeQueryKeyFor.search(args),
       queryFn: async () => {
-        const params = new URLSearchParams();
-        params.set('limit', args.limit.toString());
-        params.set('offset', args.offset.toString());
-        if (args.searchText) params.set('searchText', args.searchText);
-
-        const response = await fetchApi(`/${name}?` + params.toString());
+        const response = await fetchApi([`/${name}`, args]);
         if (!response.ok) throw response;
         return await response.json();
       },
     });
   }
 
-  const useGetEntityQuery: UseGetEntityQuery<M> = (entityId) => {
+  const useSearchQueries: UseSearchQueries = (args) => {
+    const fetchApi = useFetchApi();
+
+    return useQueries({
+      queries: args.map(args => ({
+        queryKey: makeQueryKeyFor.search(args),
+        queryFn: async () => {
+          const response = await fetchApi([`/${name}`, args]);
+          if (!response.ok) throw response;
+          return await response.json();
+        },
+      }))
+    });
+  }
+
+  const useGetQuery: UseGetEntityQuery<M> = (entityId) => {
     const fetchApi = useFetchApi();
 
     return useQuery({
@@ -127,7 +134,7 @@ export function createRepo<M>(name: string, args: {
     }).map(it => it[1]);
   };
 
-  const useUpdateEntityMutation: UseUpdateEntityMutation<M> = () => {
+  const useUpdateMutation: UseUpdateEntityMutation<M> = () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
@@ -170,7 +177,7 @@ export function createRepo<M>(name: string, args: {
     });
   }
 
-  const useCreateEntityMutation: UseCreateEntityMutation<M> = () => {
+  const useCreateMutation: UseCreateEntityMutation<M> = () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const fastSnackbar = useFastSnackbar();
@@ -217,7 +224,7 @@ export function createRepo<M>(name: string, args: {
     });
   }
 
-  const useDeleteEntityMutation: UseDeleteEntityMutation = () => {
+  const useDeleteMutation: UseDeleteEntityMutation = () => {
     const fetchApi = useFetchApi();
     const fastSnackbar = useFastSnackbar();
     const queryClient = useQueryClient();
@@ -262,8 +269,8 @@ export function createRepo<M>(name: string, args: {
     });
   }
 
-  const useEntityText: UseEntityText = (entityId) => {
-    const query = useGetEntityQuery(entityId);
+  const useText: UseText = (entityId) => {
+    const query = useGetQuery(entityId);
 
     if (query.data) {
       return entityToText(query.data);
@@ -272,7 +279,7 @@ export function createRepo<M>(name: string, args: {
     return null;
   }
 
-  useEntityText.fromQueryClient = (queryClient, entityId) => {
+  useText.fromQueryClient = (queryClient, entityId) => {
     const query = queryClient.getQueryData(['_createRepo', name, entityId])
     return query ? entityToText(query as M) : null;
   }
@@ -280,19 +287,20 @@ export function createRepo<M>(name: string, args: {
   return {
     getAllCachedEntities,
     makeQueryKeyFor,
-    useEntityText,
+    useText,
     useSearchQuery,
-    useGetEntityQuery,
-    useUpdateEntityMutation,
-    useCreateEntityMutation,
-    useDeleteEntityMutation,
+    useSearchQueries,
+    useGetQuery,
+    useUpdateMutation,
+    useCreateMutation,
+    useDeleteMutation,
     useDeleteUx: createUseDeleteUx({
-      useEntityText,
-      useGetEntityQuery,
-      useDeleteEntityMutation,
+      useText,
+      useGetQuery,
+      useDeleteMutation,
     }),
     EntityAutocomplete: createEntityAutocomplete({
-      useEntityText,
+      useText,
       useSearchQuery,
     })
   };

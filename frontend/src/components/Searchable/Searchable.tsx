@@ -1,8 +1,8 @@
 import {ReactElement, ReactNode} from "react";
-import {UseSearchQuery} from "../../state/repo/repo.tsx";
 import PaginatedSearchable from "./PaginatedSearchable.tsx";
 import {useIsMobileLayout} from "../../mui-theme.tsx";
 import ScrollableSearchable from "./ScrollableSearchable.tsx";
+import {UseSearchQuery} from "../../state/repo/searchQuery.ts";
 
 export interface SearchableFC {
   <UseSearchQueryProps extends object = object>(props: {

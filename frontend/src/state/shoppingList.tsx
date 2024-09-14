@@ -1,8 +1,7 @@
-import {useQuery} from "@tanstack/react-query";
-import * as model from "../model.ts";
-import {UseSearchQuery} from "./repo/repo.tsx";
 import {SearchParams} from "../model.ts";
 import {useFetchApi} from "./fetch.ts";
+import {UseSearchQuery} from "./repo/searchQuery.ts";
+import {useQuery} from "@tanstack/react-query";
 
 export function createQueryKeyForShoppingListItemsQuery(args: SearchParams & { shoppingListId: string }) {
   const {shoppingListId, offset, searchText = ""} = args;
@@ -16,7 +15,7 @@ export const useShoppingListItemsQuery: UseSearchQuery<{
 }> = args => {
   const fetchApi = useFetchApi();
 
-  return useQuery<model.SearchResult<string>>({
+  return useQuery({
     queryKey: createQueryKeyForShoppingListItemsQuery(args),
     queryFn: async () => {
       const params = new URLSearchParams();

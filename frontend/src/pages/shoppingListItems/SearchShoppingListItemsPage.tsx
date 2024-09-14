@@ -4,12 +4,7 @@ import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
 import {Button} from "@mui/material";
 import {useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
-import {
-  useDeleteShoppingListItemUx,
-  useGetProductQuery,
-  useGetShoppingListItemQuery,
-  useGetShoppingListQuery
-} from "../../state/stdRepos.ts";
+import {productsRepo, shoppingListItemsRepo, shoppingListsRepo} from "../../state/stdRepos.ts";
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,7 +18,7 @@ const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
 }> = props => {
   const navigate = useNavigate();
-  const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId)
+  const shoppingListQuery = shoppingListsRepo.useGetQuery(props.shoppingListId)
   const isMobileLayout = useIsMobileLayout();
 
   const Searchable = isMobileLayout ? ScrollableSearchable : PaginatedSearchable;
@@ -63,9 +58,9 @@ const ShoppingListItem: FC<{
   shoppingListItemId: string;
 }> = props => {
   const navigate = useNavigate();
-  const shoppingListQuery = useGetShoppingListItemQuery(props.shoppingListItemId);
-  const deleteUx = useDeleteShoppingListItemUx(props.shoppingListItemId);
-  const productQuery = useGetProductQuery(shoppingListQuery.data?.productId);
+  const shoppingListQuery = shoppingListItemsRepo.useGetQuery(props.shoppingListItemId);
+  const deleteUx = shoppingListItemsRepo.useDeleteUx(props.shoppingListItemId);
+  const productQuery = productsRepo.useGetQuery(shoppingListQuery.data?.productId);
   const isCheckedMutation = useShoppingListItemIsCheckedMutation();
 
   if (!shoppingListQuery.isSuccess || (!shoppingListQuery.data.productName && !productQuery.isSuccess)) {

@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useGetProductQuery, useUpdateProductMutation} from "../../state/stdRepos.ts";
+import {productsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ProductEditForm from "../../components/forms/ProductEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
@@ -7,8 +7,8 @@ import PageTitle from "../../components/PageTitle.tsx";
 const EditProductPage: FC<{
   productId: string;
 }> = props => {
-  const productQuery = useGetProductQuery(props.productId);
-  const productMutation = useUpdateProductMutation();
+  const productQuery = productsRepo.useGetQuery(props.productId);
+  const productMutation = productsRepo.useUpdateMutation();
 
   if (productQuery.isPending) {
     return <div>Loading</div>

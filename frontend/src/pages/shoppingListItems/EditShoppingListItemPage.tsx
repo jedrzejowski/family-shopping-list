@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useGetShoppingListItemQuery, useUpdateShoppingListItemMutation} from "../../state/stdRepos.ts";
+import {shoppingListItemsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ShoppingListItemEditForm from "../../components/forms/ShoppingListItemEditForm.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
@@ -7,8 +7,8 @@ import PageTitle from "../../components/PageTitle.tsx";
 const EditShoppingListItemPage: FC<{
   shoppingListItemId: string;
 }> = props => {
-  const shoppingListItemQuery = useGetShoppingListItemQuery(props.shoppingListItemId);
-  const shoppingListItemMutation = useUpdateShoppingListItemMutation();
+  const shoppingListItemQuery = shoppingListItemsRepo.useGetQuery(props.shoppingListItemId);
+  const shoppingListItemMutation = shoppingListItemsRepo.useUpdateMutation();
 
   if (shoppingListItemQuery.isPending) {
     return <div>Loading</div>

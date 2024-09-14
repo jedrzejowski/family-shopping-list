@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useDeleteShoppingListUx, useGetShoppingListQuery, useSearchShoppingListQuery} from "../../state/stdRepos.ts";
+import {shoppingListsRepo} from "../../state/stdRepos.ts";
 import {Button} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
@@ -15,7 +15,7 @@ const SearchShoppingListsPage: FC = () => {
     <PageTitle title="Listy zakupów"/>
 
     <Searchable
-      useSearchQuery={useSearchShoppingListQuery}
+      useSearchQuery={shoppingListsRepo.useSearchQuery}
       renderItem={shoppingListId => <ShoppingList key={shoppingListId} shoppingListId={shoppingListId}/>}
       toolbarActions={<>
         <Button
@@ -34,8 +34,8 @@ export default SearchShoppingListsPage;
 
 const ShoppingList: FC<{ shoppingListId: string }> = props => {
   const navigate = useNavigate();
-  const shoppingListQuery = useGetShoppingListQuery(props.shoppingListId);
-  const deleteUx = useDeleteShoppingListUx(props.shoppingListId);
+  const shoppingListQuery = shoppingListsRepo.useGetQuery(props.shoppingListId);
+  const deleteUx = shoppingListsRepo.useDeleteUx(props.shoppingListId);
 
   if (shoppingListQuery.isPending) {
     return <div>Loading</div>

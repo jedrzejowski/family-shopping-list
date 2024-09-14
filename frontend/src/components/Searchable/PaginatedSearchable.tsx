@@ -11,8 +11,8 @@ const PaginatedSearchable: SearchableFC = props => {
     searchText: searchQueryText,
     limit: pageSize,
     offset: (pageNumber - 1) * pageSize,
-    ...props.additionalSearchQueryProps,
-  } as Parameters<typeof props.useSearchQuery>[0]);
+    ...props.additionalSearchQueryProps as any,
+  });
 
   useLayoutEffect(() => {
     const totalCount = productListQuery.data?.totalCount;

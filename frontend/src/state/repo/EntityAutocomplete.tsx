@@ -4,14 +4,15 @@ import {Autocomplete, Box, TextField} from "@mui/material";
 import {BaseTextFieldProps} from "@mui/material/TextField/TextField";
 import {NIL} from "uuid";
 import {useQueryClient} from "@tanstack/react-query";
-import {UseEntityText, UseSearchQuery} from "./repo.tsx";
+import {UseText} from "./repo.tsx";
+import {UseSearchQuery} from "./searchQuery.ts";
 
 export function createEntityAutocomplete(args: {
-  useEntityText: UseEntityText;
+  useText: UseText;
   useSearchQuery: UseSearchQuery;
 }) {
   const {
-    useEntityText,
+    useText,
     useSearchQuery,
   } = args;
 
@@ -20,7 +21,7 @@ export function createEntityAutocomplete(args: {
     optionProps: HTMLAttributes<HTMLLIElement>;
   }> = props => {
     const isUuid = uuidRegex.test(props.option);
-    const entityText = useEntityText(isUuid ? props.option : null);
+    const entityText = useText(isUuid ? props.option : null);
 
     return <Box
       component="li"
@@ -39,7 +40,7 @@ export function createEntityAutocomplete(args: {
 
     const value = props.value === NIL || !props.value ? null : props.value
     const queryClient = useQueryClient();
-    useEntityText(value && isUuid(value) ? value : null);
+    useText(value && isUuid(value) ? value : null);
     const [inputValue, setInputValue] = useState('');
     const searchQuery = useSearchQuery({
       searchText: inputValue,
@@ -70,7 +71,7 @@ export function createEntityAutocomplete(args: {
       getOptionKey={id => id}
       getOptionLabel={value => {
         if (isUuid(value)) {
-          return useEntityText.fromQueryClient(queryClient, value) ?? '';
+          return useText.fromQueryClient(queryClient, value) ?? '';
         }
 
         if (allowCustomInput) return value;

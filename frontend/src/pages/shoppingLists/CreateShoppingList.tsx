@@ -1,5 +1,5 @@
 import {FC} from "react";
-import {useCreateShoppingListMutation} from "../../state/stdRepos.ts";
+import {shoppingListsRepo} from "../../state/stdRepos.ts";
 import PageContainer from "../../components/PageContainer.tsx";
 import ShoppingListEditForm from "../../components/forms/ShoppingListEditForm.tsx";
 import * as model from "../../model.ts";
@@ -10,7 +10,7 @@ import {useNavigate} from "react-router-dom";
 
 const CreateShoppingListPage: FC = () => {
   const navigate = useNavigate();
-  const shopMutation = useCreateShoppingListMutation();
+  const shopMutation = shoppingListsRepo.useCreateMutation();
 
   const baseNewShoppingList: model.ShoppingList = {
     shoppingListId: NIL,
