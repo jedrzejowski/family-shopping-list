@@ -1,8 +1,8 @@
-import {useFamilyId} from "./family.tsx";
 import {useQuery} from "@tanstack/react-query";
 import * as model from "../model.ts";
 import {UseSearchQuery} from "./repo/repo.tsx";
 import {SearchParams} from "../model.ts";
+import {useFetchApi} from "./fetch.ts";
 
 export function createQueryKeyForShoppingListItemsQuery(args: SearchParams & { shoppingListId: string }) {
   const {shoppingListId, offset, searchText = ""} = args;
@@ -14,7 +14,7 @@ export function createQueryKeyForShoppingListItemsQuery(args: SearchParams & { s
 export const useShoppingListItemsQuery: UseSearchQuery<{
   shoppingListId: string;
 }> = args => {
-  const familyId = useFamilyId();
+  const fetchApi = useFetchApi();
 
   return useQuery<model.SearchResult<string>>({
     queryKey: createQueryKeyForShoppingListItemsQuery(args),
@@ -24,11 +24,7 @@ export const useShoppingListItemsQuery: UseSearchQuery<{
       params.set('offset', args.offset.toString());
       if (args.searchText) params.set('searchText', args.searchText);
 
-      const response = await fetch(`/api/shopping-lists/${args.shoppingListId}/items?` + params.toString(), {
-        headers: {
-          'x-family-id': familyId,
-        }
-      });
+      const response = await fetchApi(`/shopping-lists/${args.shoppingListId}/items?` + params.toString());
 
       if (response.status !== 200) {
         throw response;

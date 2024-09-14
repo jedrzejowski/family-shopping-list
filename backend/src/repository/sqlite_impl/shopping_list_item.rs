@@ -17,6 +17,24 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     todo!()
   }
 
+  async fn get_all_ids(&self, family_context: &FamilyContext) -> Result<Vec<Uuid>> {
+
+    // language=sqlite
+    let all_ids =sqlx::query("
+      select shopping_list_item_id
+      from shopping_list_items
+      where family_id = ?
+    ")
+      .bind(family_context.family_id.to_string())
+      .try_map(|row: SqliteRow| {
+        self.try_get_uuid_field(&row, 0)
+      })
+      .fetch_all(self.pool())
+      .await?;
+
+    Ok(all_ids)
+  }
+
   async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingListItem>> {
 
     // language=sqlite

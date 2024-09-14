@@ -2,6 +2,7 @@ import * as model from '../model.ts';
 import {createRepo} from './repo/repo.tsx';
 
 export const {
+  makeQueryKeyFor: makeQueryKeyForShop,
   useSearchQuery: useSearchShopQuery,
   useGetEntityQuery: useGetShopQuery,
   useCreateEntityMutation: useCreateShopMutation,
@@ -13,6 +14,7 @@ export const {
 });
 
 export const {
+  makeQueryKeyFor: makeQueryKeyForProduct,
   useSearchQuery: useSearchProductQuery,
   useGetEntityQuery: useGetProductQuery,
   useCreateEntityMutation: useCreateProductMutation,
@@ -25,6 +27,7 @@ export const {
 });
 
 export const {
+  makeQueryKeyFor: makeQueryKeyForShoppingList,
   useSearchQuery: useSearchShoppingListQuery,
   useGetEntityQuery: useGetShoppingListQuery,
   useCreateEntityMutation: useCreateShoppingListMutation,

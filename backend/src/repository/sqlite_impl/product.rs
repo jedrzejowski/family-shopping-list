@@ -19,7 +19,7 @@ impl CrudRepository<Product> for SqliteDatabase {
       "select product_id from products where ");
     qb.push("family_id = ").push_bind(family_context.family_id.to_string());
 
-    self.make_text_search(qb, ["trade_name"], ["product_id"], search_params).await
+    self.make_text_search(qb, ["trade_name"], ["product_id asc"], search_params).await
   }
 
   async fn get(&self, family_context: &FamilyContext, product_id: Uuid) -> anyhow::Result<Option<Product>> {

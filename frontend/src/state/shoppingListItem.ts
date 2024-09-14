@@ -2,7 +2,7 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useFetchApi} from './fetch.ts';
 import * as model from '../model.ts';
 import {useFastSnackbar} from '../hooks/snackbar.tsx';
-import {getAllCachedShoppingListItems, makeQueryKeyForShoppingListItem} from './stdRepos.ts';
+import {makeQueryKeyForShoppingListItem} from './stdRepos.ts';
 import {SearchResult} from '../model.ts';
 import {createQueryKeyForShoppingListItemsQuery} from './shoppingList.tsx';
 

@@ -31,10 +31,7 @@ async fn main() -> Result<()> {
   };
 
   let app = Router::new()
-    .nest("/api/products", endpoints::products::make_router())
-    .nest("/api/shops", endpoints::shops::make_router())
-    .nest("/api/shopping-lists", endpoints::shopping_lists::make_router())
-    .nest("/api/shopping-list-items", endpoints::shopping_list_items::make_router())
+    .nest("/api", endpoints::api::make_router())
     .nest_service("/", serve_dir)
     .with_state(app_state)
     ;
