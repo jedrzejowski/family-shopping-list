@@ -48,16 +48,23 @@ export function createEntityAutocomplete(args: {
     });
 
     const options = useMemo(() => {
-      const options = searchQuery.data?.items ?? [];
+      let options = searchQuery.data?.items ?? [];
+      options = [...options];
+
       if (allowCustomInput && inputValue) {
-        return [inputValue, ...options];
-      } else {
-        return options;
+        options = [inputValue, ...options];
       }
-    }, [searchQuery.data?.items, inputValue, allowCustomInput])
+
+      if (value && options.indexOf(value) < 0) {
+        options.push(value);
+      }
+
+      return options;
+    }, [searchQuery.data?.items, inputValue, allowCustomInput, value])
 
     return <Autocomplete
       value={value}
+      options={options}
       onChange={(_event, value) => props.onChange(value)}
       inputValue={inputValue}
       getOptionKey={id => id}
@@ -85,7 +92,6 @@ export function createEntityAutocomplete(args: {
           fullWidth={props.fullWidth}
         />;
       }}
-      options={options}
     />
   }
 

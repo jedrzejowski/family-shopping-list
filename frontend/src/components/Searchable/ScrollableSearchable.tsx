@@ -9,6 +9,7 @@ import {
   Toolbar
 } from "@mui/material";
 import {SearchableFC, SearchableProps} from "./Searchable.tsx";
+import {TransitionGroup} from 'react-transition-group';
 
 const ScrollableSearchable: SearchableFC = props => {
   const [pageSize] = useState(props.initialPageSize ?? 10);
@@ -48,16 +49,18 @@ const ScrollableSearchable: SearchableFC = props => {
     <Divider sx={{mt: 1}}/>
 
     <List>
-      {pages.map((page, i) => {
-        return <Page
-          key={i}
-          searchQueryText={searchQueryText}
-          limit={page.limit}
-          offset={page.offset}
-          parentProps={props}
-          requestNextPage={i === pages.length - 1 ? loadNextPage : undefined}
-        />
-      })}
+      <TransitionGroup>
+        {pages.map((page, i) => {
+          return <Page
+            key={i}
+            searchQueryText={searchQueryText}
+            limit={page.limit}
+            offset={page.offset}
+            parentProps={props}
+            requestNextPage={i === pages.length - 1 ? loadNextPage : undefined}
+          />
+        })}
+      </TransitionGroup>
     </List>
   </>
 }

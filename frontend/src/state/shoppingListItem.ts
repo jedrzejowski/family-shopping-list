@@ -51,9 +51,16 @@ export function useShoppingListItemIsCheckedMutation() {
             offset: 0
           }),
           (data: SearchResult<string>) => {
-            if (data) {
-              // const allItems = getAllCachedShoppingListItems(queryClient);
+            if (data && shoppingListId) {
+              const items = [...data.items];
+              const index = items.indexOf(variables.shoppingListItemId);
 
+              if (index >= 0) {
+                items.splice(index, 1);
+                items.push(variables.shoppingListItemId);
+
+                data = {...data, items};
+              }
             }
             return data;
           });

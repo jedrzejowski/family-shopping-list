@@ -1,4 +1,5 @@
 import {useFamilyId} from './family.tsx';
+import {useQuery} from '@tanstack/react-query';
 
 export function useFetchApi() {
   const familyId = useFamilyId();
@@ -23,4 +24,32 @@ export function useFetchApi() {
 
 export function wait(num: number) {
   return new Promise(resolve => setTimeout(resolve, num));
+}
+
+export function createUseQueryWithFetchApi<Args extends object>(
+  createPath: (args: Args) => (string | [string, URLSearchParams]),
+) {
+  return (args: Args) => {
+    const fetchApi = useFetchApi();
+    const createPathResult = createPath(args);
+    let path: string;
+    if (typeof createPathResult === 'string') {
+      path = createPathResult;
+    } else if (Array.isArray(createPathResult)) {
+      let [path1, query] = createPathResult;
+      query.sort();
+      path = path1 + query.toString();
+    } else {
+      throw new Error('createPathResult is wrong type');
+    }
+
+    return useQuery({
+      queryKey: ['fetchApi', path],
+      queryFn: async () => {
+        const response = await fetchApi(path);
+        if (!response.ok) throw response;
+        return await response.json();
+      },
+    });
+  };
 }

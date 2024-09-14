@@ -24,6 +24,9 @@ export function useFastSnackbar() {
     } else if (arg1 === 'saved') {
       variant = 'success';
       message = 'Zapisano';
+    } else if (arg1 === 'deleted') {
+      variant = 'default';
+      message = 'Usunięto';
     } else if (arg1 === 'error') {
       variant = 'error';
       message = 'Wystąpił błąd';
