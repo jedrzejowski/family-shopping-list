@@ -26,17 +26,19 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
 
     // language=sqlite
     let mut shopping_list = sqlx::query("
-      select shopping_list_id, name
+      select shopping_list_id, name,
+             _meta_created_at, _meta_updated_at
       from shopping_lists
       where family_id = ? and shopping_list_id = ?
     ")
       .bind(family_context.family_id.to_string())
       .bind(shopping_list_id.to_string())
-      .map(|row: SqliteRow| {
-        ShoppingList {
-          shopping_list_id: Uuid::parse_str(row.get(0)).unwrap(),
+      .try_map(|row: SqliteRow| {
+        Ok(ShoppingList {
+          shopping_list_id: self.try_get_uuid_field(&row, 0)?,
           name: row.get(1),
-        }
+          meta: Some(self.try_get_meta_fields(&row)?),
+        })
       })
       .fetch_all(self.pool())
       .await?;
@@ -99,7 +101,7 @@ impl ShoppingListRepository for SqliteDatabase {
     &self,
     family_context: &FamilyContext,
     shopping_list_id: Uuid,
-    search_params: SearchParams
+    search_params: SearchParams,
   ) -> Result<SearchResult<Uuid>> {
 
     // language=sqlite
@@ -115,8 +117,12 @@ impl ShoppingListRepository for SqliteDatabase {
     self.make_text_search(
       qb,
       ["p.trade_name"],
-      ["is_checked asc", "shopping_list_item_id asc"],
-      search_params
+      [
+        "is_checked asc",
+        "items._meta_updated_at desc",
+        "shopping_list_item_id asc"
+      ],
+      search_params,
     ).await
   }
 }

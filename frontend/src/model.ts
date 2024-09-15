@@ -12,10 +12,15 @@ export interface SearchResult<T> {
   previousPageParams?: SearchParams;
 }
 
+export interface EntityMeta {
+
+}
+
 export interface Product {
   productId: string;
   tradeName: string;
   tags: { name: string }[];
+  meta: EntityMeta;
 }
 
 export interface Shop {
@@ -24,11 +29,13 @@ export interface Shop {
   addressCity?: string;
   addressStreet?: string;
   addressStreetNo?: string;
+  meta: EntityMeta;
 }
 
 export interface ShoppingList {
   shoppingListId: string;
   name: string;
+  meta: EntityMeta;
 }
 
 export interface ShoppingListItem {
@@ -37,4 +44,5 @@ export interface ShoppingListItem {
   productId?: string | null;
   productName?: string | null;
   isChecked: boolean;
+  meta: EntityMeta;
 }

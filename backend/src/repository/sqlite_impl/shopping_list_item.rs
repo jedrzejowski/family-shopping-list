@@ -2,6 +2,8 @@ use sqlx::Row;
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
 use anyhow::Result;
+use time::format_description::well_known::{Rfc2822, Rfc3339};
+use time::OffsetDateTime;
 use crate::database::sqlite::SqliteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult, ShoppingListItem};
@@ -20,7 +22,7 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
   async fn get_all_ids(&self, family_context: &FamilyContext) -> Result<Vec<Uuid>> {
 
     // language=sqlite
-    let all_ids =sqlx::query("
+    let all_ids = sqlx::query("
       select shopping_list_item_id
       from shopping_list_items
       where family_id = ?
@@ -39,7 +41,8 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
 
     // language=sqlite
     let mut list = sqlx::query("
-      select shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked, product_id
+      select shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked, product_id,
+             _meta_created_at, _meta_updated_at
       from shopping_list_items
       where family_id = ? and shopping_list_item_id = ?
     ")
@@ -52,6 +55,7 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
           product_id: self.try_get_option_uuid_field(&row, 2)?,
           product_name: row.try_get(3)?,
           is_checked: row.get(4),
+          meta: Some(self.try_get_meta_fields(&row)?),
         })
       })
       .fetch_all(self.pool())
@@ -66,8 +70,9 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     // language=sqlite
     sqlx::query("
       insert
-      into shopping_list_items(family_id, shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked)
-      values (?, ?, ?, ?, ?, ?)
+      into shopping_list_items(family_id, shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked,
+                               _meta_created_at, _meta_created_at)
+      values (?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)
     ")
       .bind(family_context.family_id.to_string())
       .bind(shopping_list_item_id.to_string())
@@ -88,7 +93,8 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
       set product_id = ?,
           product_name = ?,
           is_checked = ?,
-          shopping_list_id = ?
+          shopping_list_id = ?,
+          _meta_updated_at = current_timestamp
       where family_id = ? and shopping_list_item_id = ?
     ")
       .bind(shopping_list_item.product_id.map(|id| id.to_string()))
@@ -120,11 +126,17 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
 
 #[async_trait::async_trait]
 impl ShoppingListItemRepository for SqliteDatabase {
-  async fn set_is_checked(&self, family_context: &FamilyContext, shopping_list_item_id: Uuid, is_checked: bool) -> Result<()> {
+  async fn set_is_checked(
+    &self,
+    family_context: &FamilyContext,
+    shopping_list_item_id: Uuid,
+    is_checked: bool,
+  ) -> Result<()> {
     // language=sqlite
     sqlx::query("
       update shopping_list_items
-      set is_checked = ?
+      set is_checked = ?,
+          _meta_updated_at = current_timestamp
       where family_id = ? and shopping_list_item_id = ?
     ")
       .bind(is_checked)

@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
 import {Button} from "@mui/material";
-import {useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
+import {useShoppingListItemsQueries, useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
 import {productsRepo, shoppingListItemsRepo, shoppingListsRepo} from "../../state/stdRepos.ts";
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
@@ -36,6 +36,7 @@ const SearchShoppingListItemsPage: FC<{
 
     <Searchable
       useSearchQuery={useShoppingListItemsQuery}
+      useSearchQueries={useShoppingListItemsQueries}
       additionalSearchQueryProps={{shoppingListId: props.shoppingListId}}
       renderItem={id => <ShoppingListItem key={id} shoppingListItemId={id}/>}
       toolbarActions={<>

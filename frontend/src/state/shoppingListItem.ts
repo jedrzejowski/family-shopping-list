@@ -12,6 +12,27 @@ export function useShoppingListItemIsCheckedMutation() {
   const fastSnackbar = useFastSnackbar();
 
   return useMutation({
+    onMutate(variables) {
+      let ctx = {
+        dataBefore: null as model.ShoppingListItem | null,
+      };
+
+      queryClient.setQueryData(
+        shoppingListItemsRepo.makeQueryKeyFor.getQuery(variables.shoppingListItemId),
+        (data: model.ShoppingListItem | undefined) => {
+          if (data) {
+            ctx.dataBefore = data;
+            data = {
+              ...data,
+              isChecked: variables.isChecked,
+            };
+          }
+          return data;
+        });
+
+
+      return ctx;
+    },
     mutationFn: async (variables: { shoppingListItemId: string; isChecked: boolean; updateSearch: boolean }) => {
       const pathSuffix = variables.isChecked ? 'check' : 'uncheck';
       const response = await fetchApi(`/shopping-list-items/${variables.shoppingListItemId}/${pathSuffix}`, {
@@ -24,50 +45,6 @@ export function useShoppingListItemIsCheckedMutation() {
 
       return variables;
     },
-    onMutate(variables) {
-      let dataBefore: model.ShoppingListItem | null = null;
-
-      let shoppingListId: string | null = null;
-
-      queryClient.setQueryData(
-        shoppingListItemsRepo.makeQueryKeyFor.getQuery(variables.shoppingListItemId),
-        (data: model.ShoppingListItem | undefined) => {
-          if (data) {
-            shoppingListId = data.shoppingListId;
-            dataBefore = data;
-            data = {
-              ...data,
-              isChecked: variables.isChecked,
-            };
-          }
-          return data;
-        });
-
-      if (variables.updateSearch && shoppingListId) {
-        queryClient.setQueryData(
-          createQueryKeyForShoppingListItemsQuery({
-            shoppingListId,
-            limit: Infinity,
-            offset: 0
-          }),
-          (data: SearchResult<string>) => {
-            if (data && shoppingListId) {
-              const items = [...data.items];
-              const index = items.indexOf(variables.shoppingListItemId);
-
-              if (index >= 0) {
-                items.splice(index, 1);
-                items.push(variables.shoppingListItemId);
-
-                data = {...data, items};
-              }
-            }
-            return data;
-          });
-      }
-
-      return {dataBefore};
-    },
     onError(_error, variables, context) {
       if (context?.dataBefore) {
 
@@ -77,6 +54,36 @@ export function useShoppingListItemIsCheckedMutation() {
       }
 
       fastSnackbar('error');
+    },
+    onSuccess(_data, variables, context) {
+
+      if (variables.updateSearch && context.dataBefore) {
+        queryClient.setQueryData(
+          createQueryKeyForShoppingListItemsQuery({
+            shoppingListId: context.dataBefore.shoppingListId,
+            limit: Infinity,
+            offset: 0
+          }),
+          (data: SearchResult<string>) => {
+            if (data) {
+              const items = [...data.items];
+              const index = items.indexOf(variables.shoppingListItemId);
+
+              if (index >= 0) {
+                items.splice(index, 1);
+
+                if (variables.isChecked) {
+                  items.push(variables.shoppingListItemId);
+                } else {
+                  items.unshift(variables.shoppingListItemId);
+                }
+
+                data = {...data, items};
+              }
+            }
+            return data;
+          });
+      }
     }
   });
 }

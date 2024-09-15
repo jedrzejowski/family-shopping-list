@@ -26,18 +26,20 @@ impl CrudRepository<Product> for SqliteDatabase {
 
     // language=sqlite
     let product = sqlx::query("
-      select product_id, trade_name
+      select product_id, trade_name,
+             _meta_updated_at, _meta_created_at
       from products
       where family_id = ? and product_id = ?
     ")
       .bind(family_context.family_id.to_string())
       .bind(product_id.to_string())
-      .map(|row: SqliteRow| {
-        Product {
+      .try_map(|row: SqliteRow| {
+        Ok(Product {
           product_id: Uuid::parse_str(row.get(0)).unwrap(),
           trade_name: row.get(1),
           tags: vec![],
-        }
+          meta: Some(self.try_get_meta_fields(&row)?),
+        })
       })
       .fetch_all(self.pool())
       .await?

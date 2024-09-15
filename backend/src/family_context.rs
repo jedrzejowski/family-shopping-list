@@ -8,7 +8,7 @@ pub struct FamilyContext {
 }
 
 #[async_trait::async_trait]
-impl <S> FromRequestParts<S> for FamilyContext {
+impl<S> FromRequestParts<S> for FamilyContext {
   type Rejection = StatusCode;
 
   async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {

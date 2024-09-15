@@ -1,10 +1,11 @@
 use std::path::Path;
 use anyhow::Result;
 use log::LevelFilter;
-use crate::model::{SearchParams, SearchParamsLimit, SearchResult};
+use crate::model::{EntityMeta, SearchParams, SearchParamsLimit, SearchResult};
 use sqlx::pool::PoolConnection;
 use sqlx::{ColumnIndex, ConnectOptions, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
+use time::{OffsetDateTime, UtcOffset};
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -23,9 +24,9 @@ impl SqliteDatabase {
 
     let pool = pool_options.connect_with(connect_options).await?;
 
-    sqlx::migrate!("src/database/sqlite-migrations")
-      .run(&pool)
-      .await?;
+    // sqlx::migrate!("src/database/sqlite-migrations")
+    //   .run(&pool)
+    //   .await?;
 
     // .connect("database.sqlite").await?;
 
@@ -56,6 +57,14 @@ impl SqliteDatabase {
 
   pub async fn acquire(&self) -> Result<PoolConnection<Sqlite>> {
     Ok(self.sqlx_pool.acquire().await?)
+  }
+
+  pub fn try_get_meta_fields(&self, row: &SqliteRow) -> Result<EntityMeta, sqlx::Error>
+  {
+    Ok(EntityMeta {
+      created_at: row.try_get("_meta_created_at")?,
+      updated_at: row.try_get("_meta_updated_at")?,
+    })
   }
 
   pub fn try_get_uuid_field<I>(&self, row: &SqliteRow, index: I) -> Result<Uuid, sqlx::Error>

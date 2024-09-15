@@ -6,6 +6,30 @@ export function useFetchApi() {
   return async (path: string | [string, object], init?: RequestInit) => {
     // await wait(2000000);
 
+    if (Array.isArray(path)) {
+      let [path2, query] = path;
+      const params = new URLSearchParams();
+
+      for (const key in query) {
+        // @ts-ignore
+        const value = query[key];
+
+        if (
+          typeof value === 'string' ||
+          typeof value === 'boolean' ||
+          typeof value === 'number'
+        ) {
+          params.set(key, value + '');
+        }
+      }
+
+      if (params.size > 0) {
+        path = path2 + '?' + params.toString();
+      } else {
+        path = path2;
+      }
+    }
+
     const url = '/api' + path;
 
     const headers = init?.headers ?? {};

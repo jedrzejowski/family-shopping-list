@@ -1,7 +1,7 @@
 import {SearchParams} from "../model.ts";
 import {useFetchApi} from "./fetch.ts";
-import {UseSearchQuery} from "./repo/searchQuery.ts";
-import {useQuery} from "@tanstack/react-query";
+import {UseSearchQueries, UseSearchQuery} from "./repo/searchQuery.ts";
+import {useQueries, useQuery} from "@tanstack/react-query";
 
 export function createQueryKeyForShoppingListItemsQuery(args: SearchParams & { shoppingListId: string }) {
   const {shoppingListId, offset, searchText = ""} = args;
@@ -18,12 +18,14 @@ export const useShoppingListItemsQuery: UseSearchQuery<{
   return useQuery({
     queryKey: createQueryKeyForShoppingListItemsQuery(args),
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.set('limit', args.limit.toString());
-      params.set('offset', args.offset.toString());
-      if (args.searchText) params.set('searchText', args.searchText);
-
-      const response = await fetchApi(`/shopping-lists/${args.shoppingListId}/items?` + params.toString());
+      const response = await fetchApi([
+        `/shopping-lists/${args.shoppingListId}/items`,
+        {
+          limit: args.limit,
+          offset: args.offset,
+          searchText: args.searchText,
+        }
+      ]);
 
       if (response.status !== 200) {
         throw response;
@@ -31,5 +33,33 @@ export const useShoppingListItemsQuery: UseSearchQuery<{
 
       return await response.json();
     }
+  });
+}
+
+export const useShoppingListItemsQueries: UseSearchQueries<{
+  shoppingListId: string;
+}> = args => {
+  const fetchApi = useFetchApi();
+
+  return useQueries({
+    queries: args.map(args => ({
+      queryKey: createQueryKeyForShoppingListItemsQuery(args),
+      queryFn: async () => {
+        const response = await fetchApi([
+          `/shopping-lists/${args.shoppingListId}/items`,
+          {
+            limit: args.limit,
+            offset: args.offset,
+            searchText: args.searchText,
+          }
+        ]);
+
+        if (response.status !== 200) {
+          throw response;
+        }
+
+        return await response.json();
+      }
+    }))
   });
 }
