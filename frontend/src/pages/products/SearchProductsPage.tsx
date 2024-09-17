@@ -16,6 +16,7 @@ const SearchProductsPage: FC = () => {
 
     <Searchable
       useSearchQuery={productsRepo.useSearchQuery}
+      useSearchQueries={productsRepo.useSearchQueries}
       renderItem={productId => <ProductItem key={productId} productId={productId}/>}
       toolbarActions={<>
         <Button

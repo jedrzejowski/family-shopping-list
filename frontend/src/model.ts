@@ -13,14 +13,15 @@ export interface SearchResult<T> {
 }
 
 export interface EntityMeta {
-
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface Product {
   productId: string;
   tradeName: string;
   tags: { name: string }[];
-  meta: EntityMeta;
+  readonly meta?: EntityMeta;
 }
 
 export interface Shop {
@@ -29,13 +30,13 @@ export interface Shop {
   addressCity?: string;
   addressStreet?: string;
   addressStreetNo?: string;
-  meta: EntityMeta;
+  readonly meta?: EntityMeta;
 }
 
 export interface ShoppingList {
   shoppingListId: string;
   name: string;
-  meta: EntityMeta;
+  readonly meta?: EntityMeta;
 }
 
 export interface ShoppingListItem {
@@ -44,5 +45,5 @@ export interface ShoppingListItem {
   productId?: string | null;
   productName?: string | null;
   isChecked: boolean;
-  meta: EntityMeta;
+  readonly meta?: EntityMeta;
 }
