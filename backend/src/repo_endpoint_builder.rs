@@ -86,9 +86,9 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   match repo.create(&family_context, entity).await {
-    Ok(productId) => {
+    Ok(product_id) => {
       let mut response = HashMap::<String, serde_json::Value>::new();
-      response.insert(repo.id_field().to_string(), serde_json::Value::String(productId));
+      response.insert(repo.id_field().to_string(), serde_json::Value::String(product_id));
 
       Ok((StatusCode::CREATED, Json(response)))
     }

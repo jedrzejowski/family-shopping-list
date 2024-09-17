@@ -13,7 +13,7 @@ POST {{baseUrl}}/api/products
 Content-Type: application/json
 
 {
-  "productId": "6928660a-0f24-42c6-9347-9ba50c91ba17",
+  "product_id": "6928660a-0f24-42c6-9347-9ba50c91ba17",
   "tradeName": "qq"
 }
 

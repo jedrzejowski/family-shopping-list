@@ -12,7 +12,11 @@ export function useShoppingListItemIsCheckedMutation() {
   const fastSnackbar = useFastSnackbar();
 
   return useMutation({
-    onMutate(variables) {
+    onMutate(variables: {
+      shoppingListItemId: string;
+      isChecked: boolean;
+      updateSearch: boolean
+    }) {
       let ctx = {
         dataBefore: null as model.ShoppingListItem | null,
       };
@@ -33,7 +37,7 @@ export function useShoppingListItemIsCheckedMutation() {
 
       return ctx;
     },
-    mutationFn: async (variables: { shoppingListItemId: string; isChecked: boolean; updateSearch: boolean }) => {
+    async mutationFn(variables) {
       const pathSuffix = variables.isChecked ? 'check' : 'uncheck';
       const response = await fetchApi(`/shopping-list-items/${variables.shoppingListItemId}/${pathSuffix}`, {
         method: 'POST',

@@ -27,21 +27,23 @@ impl CrudRepository<Shop> for SqliteDatabase {
 
     // language=sqlite
     let shop = sqlx::query("
-      select shop_id, brand_name, address_city, address_street, address_street_no
+      select shop_id, brand_name, address_city, address_street, address_street_no,
+             _meta_created_at, _meta_updated_at
       from shops
       where family_id = ?
         and shop_id = ?
     ")
       .bind(family_context.family_id.to_string())
       .bind(shop_id.to_string())
-      .map(|row: SqliteRow| {
-        Shop {
-          shop_id: Uuid::parse_str(row.get(0)).unwrap(),
+      .try_map(|row: SqliteRow| {
+        Ok(Shop {
+          shop_id: self.try_get_uuid_field(&row, 0)?,
           brand_name: row.get(1),
           address_city: row.get(2),
           address_street: row.get(3),
           address_street_no: row.get(4),
-        }
+          meta: Some(self.try_get_meta_fields(&row)?),
+        })
       })
       .fetch_all(self.pool())
       .await?
