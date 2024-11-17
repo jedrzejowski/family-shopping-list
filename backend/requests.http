@@ -18,3 +18,7 @@ Content-Type: application/json
 }
 
 ###
+GET http://localhost:4002/api/shopping-lists/866866c0-25e6-4146-97e6-1326626e8f97/items?limit=10&offset=0&searchText=
+x-family-id: d4c47893-ceef-433b-bf8d-83ebb7041600
+
+

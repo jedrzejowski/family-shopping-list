@@ -8,6 +8,7 @@ import {router} from "./router.tsx";
 import {FamilyIdProvider} from "./state/family.tsx";
 import {PageActionsContextProvider} from "./components/PageActions.tsx";
 import {ReactQueryProvider} from "./react-query.tsx";
+// import {initServiceWorker} from "./service-worker/register.ts";
 
 const root = document.getElementById('root')!;
 const reactRoot = createRoot(root);
@@ -31,3 +32,5 @@ reactRoot.render(
     </MyThemeProvider>
   </StrictMode>,
 )
+
+// initServiceWorker()

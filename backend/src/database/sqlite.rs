@@ -105,14 +105,35 @@ impl SqliteDatabase {
     order_by: impl AsRef<[&str]>,
     search_params: SearchParams,
   ) -> Result<SearchResult<Uuid>> {
+    let text_columns = text_columns.as_ref();
+
     if let Some(search_text) = &search_params.search_text {
       let search_text = format!("%{}%", search_text);
-      for text_column in text_columns.as_ref() {
-        query_builder.push(" and ");
-        query_builder.push(text_column);
-        query_builder.push(" like ");
+      query_builder.push(" and ");
 
+      let mut is_first = true;
+
+      if text_columns.len() > 1 {
+        query_builder.push("( ");
+      }
+
+      for text_column in text_columns {
+        if is_first {
+          is_first = false;
+        } else {
+          query_builder.push(" or ");
+        }
+
+        query_builder.push("( ifnull(");
+        query_builder.push(text_column);
+        query_builder.push(", '')");
+        query_builder.push(" like ");
         query_builder.push_bind(search_text.to_string());
+        query_builder.push(" )");
+      }
+
+      if text_columns.len() > 1 {
+        query_builder.push(" )");
       }
     }
 

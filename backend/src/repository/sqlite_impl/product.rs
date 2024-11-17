@@ -54,8 +54,10 @@ impl CrudRepository<Product> for SqliteDatabase {
     // language=sqlite
     sqlx::query("
       insert
-      into products(family_id, product_id, trade_name)
-      values (?, ?, ?)
+      into products(
+                    _meta_created_at, _meta_updated_at,
+                    family_id, product_id, trade_name)
+      values (current_timestamp, current_timestamp, ?, ?, ?)
     ")
       .bind(family_context.family_id.to_string())
       .bind(product_id.to_string())
@@ -70,7 +72,8 @@ impl CrudRepository<Product> for SqliteDatabase {
     // language=sqlite
     sqlx::query("
       update products
-      set trade_name = ?
+      set trade_name = ?,
+          _meta_updated_at = current_timestamp
       where family_id = ? and product_id = ?
     ")
       .bind(&product.trade_name)

@@ -19,11 +19,11 @@ pub fn make_router() -> Router<AppState> {
 
 pub async fn get_shopping_list_items(
   family_context: FamilyContext,
-  Path(shopping_List_id): Path<Uuid>,
+  Path(shopping_list_id): Path<Uuid>,
   Query(search_params): Query<SearchParams>,
   shopping_list_repo: Bean<dyn ShoppingListRepository>,
 ) -> Result<impl IntoResponse, StatusCode> {
-  match shopping_list_repo.search_items(&family_context, shopping_List_id, search_params).await {
+  match shopping_list_repo.search_items(&family_context, shopping_list_id, search_params).await {
     Ok(items) => Ok(Json(items)),
     Err(err) => {
       log::error!("{}", err);

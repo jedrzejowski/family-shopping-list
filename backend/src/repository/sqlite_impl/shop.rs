@@ -58,8 +58,9 @@ impl CrudRepository<Shop> for SqliteDatabase {
     // language=sqlite
     sqlx::query("
       insert
-      into shops(family_id, shop_id, brand_name, address_city, address_street, address_street_no)
-      values (?, ?, ?, ?, ?, ?)
+      into shops(_meta_updated_at, _meta_created_at,
+                 family_id, shop_id, brand_name, address_city, address_street, address_street_no)
+      values (current_timestamp, current_timestamp, ?, ?, ?, ?, ?, ?)
     ")
       .bind(family_context.family_id.to_string())
       .bind(shop_id.to_string())

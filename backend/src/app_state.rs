@@ -53,7 +53,6 @@ db_bean!(ShoppingListRepository);
 db_bean!(ShoppingListItemRepository);
 
 
-
 // #[async_trait::async_trait]
 // impl FromRequestParts<AppState> for Bean<dyn ShoppingListRepository> {
 //   type Rejection = StatusCode;

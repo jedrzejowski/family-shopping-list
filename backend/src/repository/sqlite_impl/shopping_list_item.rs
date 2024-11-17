@@ -1,9 +1,7 @@
-use sqlx::Row;
+use sqlx::{Execute, Row};
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
 use anyhow::Result;
-use time::format_description::well_known::{Rfc2822, Rfc3339};
-use time::OffsetDateTime;
 use crate::database::sqlite::SqliteDatabase;
 use crate::family_context::FamilyContext;
 use crate::model::{SearchParams, SearchResult, ShoppingListItem};
@@ -17,24 +15,6 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
 
   async fn search(&self, family_context: &FamilyContext, search_params: SearchParams) -> Result<SearchResult<Uuid>> {
     todo!()
-  }
-
-  async fn get_all_ids(&self, family_context: &FamilyContext) -> Result<Vec<Uuid>> {
-
-    // language=sqlite
-    let all_ids = sqlx::query("
-      select shopping_list_item_id
-      from shopping_list_items
-      where family_id = ?
-    ")
-      .bind(family_context.family_id.to_string())
-      .try_map(|row: SqliteRow| {
-        self.try_get_uuid_field(&row, 0)
-      })
-      .fetch_all(self.pool())
-      .await?;
-
-    Ok(all_ids)
   }
 
   async fn get(&self, family_context: &FamilyContext, shopping_list_id: Uuid) -> Result<Option<ShoppingListItem>> {
@@ -70,9 +50,13 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
     // language=sqlite
     sqlx::query("
       insert
-      into shopping_list_items(family_id, shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked,
-                               _meta_created_at, _meta_created_at)
-      values (?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)
+      into shopping_list_items
+        (_meta_created_at, _meta_updated_at,
+         family_id,
+         shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked
+        )
+      values (current_timestamp, current_timestamp,
+              ?, ?, ?, ?, ?, ?)
     ")
       .bind(family_context.family_id.to_string())
       .bind(shopping_list_item_id.to_string())
@@ -121,6 +105,24 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
       .await?;
 
     Ok(())
+  }
+
+  async fn get_all_ids(&self, family_context: &FamilyContext) -> Result<Vec<Uuid>> {
+
+    // language=sqlite
+    let all_ids = sqlx::query("
+      select shopping_list_item_id
+      from shopping_list_items
+      where family_id = ?
+    ")
+      .bind(family_context.family_id.to_string())
+      .try_map(|row: SqliteRow| {
+        self.try_get_uuid_field(&row, 0)
+      })
+      .fetch_all(self.pool())
+      .await?;
+
+    Ok(all_ids)
   }
 }
 

@@ -116,7 +116,7 @@ impl ShoppingListRepository for SqliteDatabase {
 
     self.make_text_search(
       qb,
-      ["p.trade_name"],
+      ["p.trade_name", "items.product_name"],
       [
         "is_checked asc",
         "items._meta_updated_at desc",
