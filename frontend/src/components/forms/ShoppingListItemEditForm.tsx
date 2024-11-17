@@ -2,7 +2,7 @@ import {FC, useState} from "react";
 import * as model from "../../model.ts";
 import {useForm} from "react-hook-form";
 import {Box, Button, Toolbar} from "@mui/material";
-import {shoppingListsRepo} from "../../state/stdRepos.ts";
+import {productsRepo} from "../../state/stdRepos.ts";
 import {uuidRegex} from "../../uuid.ts";
 
 
@@ -42,13 +42,15 @@ const ShoppingListItemEditForm: FC<{
 
   return <>
 
-    <shoppingListsRepo.EntityAutocomplete
+    <productsRepo.EntityAutocomplete
       allowCustomInput
       label="Produkt"
       fullWidth
       onChange={handleProductChange}
       value={productInput ?? ''}
+      helperText={form.getValues("productName") ? 'Produkt poza z poza słownika' : undefined}
     />
+
 
     {/*<Controller*/}
     {/*  control={form.control}*/}

@@ -91,6 +91,7 @@ export function createEntityAutocomplete(args: {
           label={props.label}
           margin={props.margin}
           fullWidth={props.fullWidth}
+          helperText={props.helperText}
         />;
       }}
     />
