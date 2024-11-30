@@ -1,17 +1,17 @@
 mod app_state;
-mod endpoints;
 mod database;
-mod model;
+mod endpoints;
 mod family_context;
-mod repository;
+mod model;
 mod repo_endpoint_builder;
+mod repository;
 
-use tower_http::services::ServeDir;
+use crate::app_state::AppState;
+use crate::database::sqlite::SqliteDatabase;
 use anyhow::Result;
 use axum::Router;
 use sqlx::{Acquire, Connection};
-use crate::app_state::AppState;
-use crate::database::sqlite::SqliteDatabase;
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -21,9 +21,7 @@ async fn main() -> Result<()> {
   let database_file = get_env_var("DATABASE_FILE", "database.sqlite");
   let database = SqliteDatabase::from_file(database_file).await?;
 
-  let app_state = AppState {
-    database,
-  };
+  let app_state = AppState { database };
 
   let serve_dir = {
     let serve_dir = get_env_var("SERVER_DIR", "./");
@@ -33,8 +31,7 @@ async fn main() -> Result<()> {
   let app = Router::new()
     .nest("/api", endpoints::api::make_router())
     .nest_service("/", serve_dir)
-    .with_state(app_state)
-    ;
+    .with_state(app_state);
 
   let bind_addr = {
     let server_host = get_env_var("SERVER_HOST", "127.0.0.1");
@@ -51,6 +48,6 @@ async fn main() -> Result<()> {
 fn get_env_var(name: &str, default: &str) -> String {
   match std::env::var(name) {
     Ok(ok) => ok,
-    Err(_) => default.to_string()
+    Err(_) => default.to_string(),
   }
 }

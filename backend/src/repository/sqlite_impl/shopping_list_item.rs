@@ -53,8 +53,9 @@ impl CrudRepository<ShoppingListItem> for SqliteDatabase {
       into shopping_list_items
         (_meta_created_at, _meta_updated_at,
          family_id,
-         shopping_list_item_id, shopping_list_id, product_id, product_name, is_checked
-        )
+         shopping_list_item_id, shopping_list_id,
+         product_id, product_name,
+         is_checked)
       values (current_timestamp, current_timestamp,
               ?, ?, ?, ?, ?, ?)
     ")
