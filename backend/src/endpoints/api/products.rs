@@ -2,10 +2,10 @@ use crate::app_state::{AppState, Bean};
 use crate::family_context::FamilyContext;
 use crate::model;
 use crate::model::SearchParams;
+use crate::problem_details::ProblemDetails;
 use crate::repo_endpoint_builder::RepoEndpointBuilder;
-use crate::repository::{ProductRepository, ShoppingListRepository};
+use crate::repository::ProductRepository;
 use axum::extract::{Path, Query};
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
@@ -22,15 +22,10 @@ async fn get_product_shopping_lists(
   Path(product_id): Path<Uuid>,
   Query(search_params): Query<SearchParams>,
   product_repo: Bean<dyn ProductRepository>,
-) -> Result<impl IntoResponse, StatusCode> {
-  match product_repo
+) -> Result<impl IntoResponse, ProblemDetails> {
+  let items = product_repo
     .search_shopping_lists(&family_context, product_id, search_params)
-    .await
-  {
-    Ok(items) => Ok(Json(items)),
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-  }
+    .await?;
+
+  Ok(Json(items))
 }

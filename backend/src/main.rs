@@ -5,6 +5,7 @@ mod family_context;
 mod model;
 mod repo_endpoint_builder;
 mod repository;
+mod problem_details;
 
 use crate::app_state::AppState;
 use crate::database::sqlite::SqliteDatabase;

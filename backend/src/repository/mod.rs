@@ -27,7 +27,7 @@ where
     search_params: SearchParams,
   ) -> Result<SearchResult<Uuid>>;
   async fn get(&self, family_context: &FamilyContext, id: Uuid) -> Result<Option<M>>;
-  async fn create(&self, family_context: &FamilyContext, object: M) -> Result<String>;
+  async fn create(&self, family_context: &FamilyContext, object: M) -> Result<Uuid>;
   async fn update(&self, family_context: &FamilyContext, object: M) -> Result<()>;
   async fn delete(&self, family_context: &FamilyContext, id: Uuid) -> Result<()>;
 

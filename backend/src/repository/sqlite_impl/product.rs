@@ -62,7 +62,7 @@ impl CrudRepository<Product> for SqliteDatabase {
     &self,
     family_context: &FamilyContext,
     product: Product,
-  ) -> anyhow::Result<String> {
+  ) -> anyhow::Result<Uuid> {
     let product_id = Uuid::new_v4();
 
     // language=sqlite
@@ -81,7 +81,7 @@ impl CrudRepository<Product> for SqliteDatabase {
     .execute(self.pool())
     .await?;
 
-    Ok(product_id.to_string())
+    Ok(product_id)
   }
 
   async fn update(&self, family_context: &FamilyContext, product: Product) -> anyhow::Result<()> {

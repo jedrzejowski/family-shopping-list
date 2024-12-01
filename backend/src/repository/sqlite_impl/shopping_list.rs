@@ -61,7 +61,7 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
     &self,
     family_context: &FamilyContext,
     shopping_list: ShoppingList,
-  ) -> Result<String> {
+  ) -> Result<Uuid> {
     let shopping_list_id = Uuid::new_v4();
 
     // language=sqlite
@@ -81,7 +81,7 @@ impl CrudRepository<ShoppingList> for SqliteDatabase {
     .execute(self.pool())
     .await?;
 
-    Ok(shopping_list_id.to_string())
+    Ok(shopping_list_id)
   }
 
   async fn update(

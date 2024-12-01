@@ -58,7 +58,7 @@ impl CrudRepository<Shop> for SqliteDatabase {
     Ok(shop)
   }
 
-  async fn create(&self, family_context: &FamilyContext, shop: Shop) -> Result<String> {
+  async fn create(&self, family_context: &FamilyContext, shop: Shop) -> Result<Uuid> {
     let shop_id = Uuid::new_v4();
 
     // language=sqlite
@@ -79,7 +79,7 @@ impl CrudRepository<Shop> for SqliteDatabase {
     .execute(self.pool())
     .await?;
 
-    Ok(shop_id.to_string())
+    Ok(shop_id)
   }
 
   async fn update(&self, family_context: &FamilyContext, shop: Shop) -> Result<()> {

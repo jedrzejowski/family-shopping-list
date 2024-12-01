@@ -87,7 +87,7 @@ where
       let mut response = HashMap::<String, serde_json::Value>::new();
       response.insert(
         repo.id_field().to_string(),
-        serde_json::Value::String(product_id),
+        serde_json::Value::String(product_id.to_string()),
       );
 
       Ok((StatusCode::CREATED, Json(response)))
