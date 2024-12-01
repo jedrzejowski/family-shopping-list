@@ -7,7 +7,7 @@ import {itemsOfShoppingListRepo, productsRepo, shoppingListItemsRepo, shoppingLi
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
-import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.ts";
+import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.tsx";
 import SearchableItemPlaceholder from "../../components/Searchable/SearchableItemPlaceholder.tsx";
 import Searchable from "../../components/Searchable/Searchable.tsx";
 import {useIsMobileLayout} from "../../mui-theme.tsx";

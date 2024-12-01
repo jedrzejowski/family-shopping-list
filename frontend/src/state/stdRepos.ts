@@ -21,7 +21,9 @@ export const shoppingListItemsRepo = createRepo<model.ShoppingListItem, 'shoppin
   idField: 'shoppingListItemId',
   entityToText: () => 'TODO',
   postMutationInvalidate({queryClient}) {
-    queryClient.invalidateQueries({queryKey: itemsOfShoppingListRepo.makeQueryKeyFor.search()});
+    queryClient.invalidateQueries({
+      queryKey: itemsOfShoppingListRepo.makeQueryKeyFor.allSearch()
+    });
   }
 });
 

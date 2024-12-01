@@ -1,6 +1,7 @@
 import {Fragment, useLayoutEffect, useState} from "react";
 import {Box, Divider, List, Pagination, Skeleton, TextField, Toolbar} from "@mui/material";
 import {SearchableProps} from "./Searchable.tsx";
+import QuerySkeleton from "../query/QuerySkeleton.tsx";
 
 function PaginatedSearchable<UseSearchQueryProps extends object>(
   props: SearchableProps<UseSearchQueryProps>
@@ -11,8 +12,10 @@ function PaginatedSearchable<UseSearchQueryProps extends object>(
   const [pageNumber, setPageNumber] = useState<number>(1);
   const query = props.useSearchQuery({
     searchText: searchQueryText,
-    limit: pageSize,
-    offset: (pageNumber - 1) * pageSize,
+    limit: Infinity,
+    offset: 0,
+    // limit: pageSize,
+    // offset: (pageNumber - 1) * pageSize,
     ...props.additionalSearchQueryProps as UseSearchQueryProps,
   });
 
@@ -53,17 +56,19 @@ function PaginatedSearchable<UseSearchQueryProps extends object>(
 
     <Divider sx={{mt: 1}}/>
 
-    {query.isPending ? (
-      <div>Loading</div>
-    ) : query.isError ? (
-      <div>Error</div>
-    ) : (
+    <QuerySkeleton query={query} render={data => (
       <List>
-        {query.data?.items?.map((entityId) => {
-          return <Fragment key={entityId}>{props.renderItem(entityId)}</Fragment>;
-        })}
+        {data.items
+          .filter((_, i) => {
+            const offset = (pageNumber - 1) * pageSize;
+            const limit = pageSize;
+            return offset <= i && i < offset + limit;
+          })
+          .map(entityId => {
+            return <Fragment key={entityId}>{props.renderItem(entityId)}</Fragment>;
+          })}
       </List>
-    )}
+    )}/>
 
     <Divider/>
 

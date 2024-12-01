@@ -15,15 +15,17 @@ export function createRepoOfItemsOfEntity<Key extends string>(args: {
   }
 
   const makeQueryKeyFor = {
-    search(args?: SearchParams & AdditionalArgs) {
-      if (args) {
-        const {[idField]: idValue, offset, searchText = ''} = args;
-        let limit: string | number = args.limit;
-        if (limit == Infinity) limit = 'Infinity';
-        return ['repo', `${repoName}/${listName}`, idValue, {limit, offset}, searchText];
-      } else {
-        return ['repo', `${repoName}/${listName}`];
-      }
+    fullSearch(args: SearchParams & AdditionalArgs) {
+      const {[idField]: idValue, offset, searchText = ''} = args;
+      let limit: string | number = args.limit;
+      if (limit == Infinity) limit = 'Infinity';
+      return ['repo', `${repoName}/${listName}`, idValue, {limit, offset}, searchText];
+    },
+    entitySearch(idValue: string) {
+      return ['repo', `${repoName}/${listName}`, idValue];
+    },
+    allSearch() {
+      return ['repo', `${repoName}/${listName}`];
     }
   };
 
@@ -32,7 +34,7 @@ export function createRepoOfItemsOfEntity<Key extends string>(args: {
     const fetchApi = useFetchApi();
 
     return useQuery({
-      queryKey: makeQueryKeyFor.search(args),
+      queryKey: makeQueryKeyFor.fullSearch(args),
       queryFn: async () => {
         const response = await fetchApi([
           `/${repoName}/${args[idField]}/${listName}`,
@@ -57,7 +59,7 @@ export function createRepoOfItemsOfEntity<Key extends string>(args: {
 
     return useQueries({
       queries: args.map(args => ({
-        queryKey: makeQueryKeyFor.search(args),
+        queryKey: makeQueryKeyFor.fullSearch(args),
         queryFn: async () => {
           const response = await fetchApi([
             `/${repoName}/${args[idField]}/${listName}`,

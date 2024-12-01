@@ -1,20 +1,25 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useFetchApi} from './fetch.ts';
 import * as model from '../model.ts';
-import {useFastSnackbar} from '../hooks/snackbar.tsx';
+import {FastSnackbarAction, useFastSnackbar} from '../hooks/snackbar.tsx';
 import {itemsOfShoppingListRepo, shoppingListItemsRepo} from './stdRepos.ts';
 import {SearchResult} from '../model.ts';
+import UndoIcon from '@mui/icons-material/Undo';
+import {SnackbarKey} from "notistack";
+
+let lastSnackbarKey: SnackbarKey | undefined = undefined;
 
 export function useShoppingListItemIsCheckedMutation() {
   const fetchApi = useFetchApi();
   const queryClient = useQueryClient();
   const fastSnackbar = useFastSnackbar();
 
-  return useMutation({
+  const mutation = useMutation({
     onMutate(variables: {
       shoppingListItemId: string;
       isChecked: boolean;
-      updateSearch: boolean
+      updateSearch: boolean;
+      moveToIndex?: number;
     }) {
       const ctx = {
         dataBefore: null as model.ShoppingListItem | null,
@@ -49,6 +54,7 @@ export function useShoppingListItemIsCheckedMutation() {
       return variables;
     },
     onError(_error, variables, context) {
+      console.log('HERE', _error)
       if (context?.dataBefore) {
 
         queryClient.setQueryData(
@@ -61,32 +67,63 @@ export function useShoppingListItemIsCheckedMutation() {
     onSuccess(_data, variables, context) {
 
       if (variables.updateSearch && context.dataBefore) {
+
+        let undoAction: FastSnackbarAction = null;
+
         queryClient.setQueryData(
-          itemsOfShoppingListRepo.makeQueryKeyFor.search({
+          itemsOfShoppingListRepo.makeQueryKeyFor.fullSearch({
             shoppingListId: context.dataBefore.shoppingListId,
             limit: Infinity,
             offset: 0
           }),
-          (data: SearchResult<string>) => {
+          (data: SearchResult<string> | undefined) => {
             if (data) {
-              const items = [...data.items];
-              const index = items.indexOf(variables.shoppingListItemId);
+              const index = data.items.indexOf(variables.shoppingListItemId);
 
               if (index >= 0) {
+                const items = [...data.items];
                 items.splice(index, 1);
 
-                if (variables.isChecked) {
-                  items.push(variables.shoppingListItemId);
+                if (typeof variables.moveToIndex === 'number') {
+                  items.splice(variables.moveToIndex, 0, variables.shoppingListItemId);
                 } else {
-                  items.unshift(variables.shoppingListItemId);
+                  if (variables.isChecked) {
+                    items.push(variables.shoppingListItemId);
+                  } else {
+                    items.unshift(variables.shoppingListItemId);
+                  }
+
+                  undoAction = {
+                    icon: <UndoIcon/>,
+                    handler() {
+                      mutation.mutate({
+                        ...variables,
+                        isChecked: !variables.isChecked,
+                        moveToIndex: index,
+                      })
+                    }
+                  };
                 }
 
                 data = {...data, items};
               }
+
             }
             return data;
           });
+
+
+        if (variables.moveToIndex === undefined) {
+          if (lastSnackbarKey !== undefined) fastSnackbar.closeSnackbar(lastSnackbarKey);
+          lastSnackbarKey = fastSnackbar({
+            variant: 'success',
+            message: 'Zapisano',
+            actions: [undoAction, 'close']
+          });
+        }
       }
     }
   });
+
+  return mutation;
 }
