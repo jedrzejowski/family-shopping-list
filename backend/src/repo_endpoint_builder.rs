@@ -1,6 +1,7 @@
 use crate::app_state::Bean;
 use crate::family_context::FamilyContext;
 use crate::model::SearchParams;
+use crate::problem_details::ProblemDetails;
 use crate::repository::{CrudRepository, CrudRepositoryBean};
 use axum::extract::{FromRef, FromRequestParts, Path, Query, Request, State};
 use axum::handler::Handler;
@@ -43,34 +44,27 @@ async fn get_id_list<M>(
   family_context: FamilyContext,
   repo: CrudRepositoryBean<M>,
   Query(search_params): Query<SearchParams>,
-) -> Result<impl IntoResponse, StatusCode>
+) -> Result<impl IntoResponse, ProblemDetails>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match repo.search(&family_context, search_params).await {
-    Ok(search_result) => Ok(Json(search_result)),
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-  }
+  let search_result = repo.search(&family_context, search_params).await?;
+
+  Ok(Json(search_result))
 }
 
 async fn get_entity<M>(
   family_context: FamilyContext,
   repo: CrudRepositoryBean<M>,
   Path(id): Path<Uuid>,
-) -> Result<impl IntoResponse, StatusCode>
+) -> Result<impl IntoResponse, ProblemDetails>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match repo.get(&family_context, id).await {
-    Ok(Some(product)) => Ok(Json(product)),
-    Ok(None) => Err(StatusCode::NOT_FOUND),
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
+  let entity = repo.get(&family_context, id).await?;
+  match entity {
+    Some(entity) => Ok(Json(entity)),
+    None => Err(ProblemDetails::not_found()),
   }
 }
 
@@ -78,57 +72,41 @@ async fn create_entity<M>(
   family_context: FamilyContext,
   repo: CrudRepositoryBean<M>,
   Json(entity): Json<M>,
-) -> Result<impl IntoResponse, StatusCode>
+) -> Result<impl IntoResponse, ProblemDetails>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match repo.create(&family_context, entity).await {
-    Ok(product_id) => {
-      let mut response = HashMap::<String, serde_json::Value>::new();
-      response.insert(
-        repo.id_field().to_string(),
-        serde_json::Value::String(product_id.to_string()),
-      );
+  let entity_id = repo.create(&family_context, entity).await?;
 
-      Ok((StatusCode::CREATED, Json(response)))
-    }
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-  }
+  let mut response = HashMap::<String, serde_json::Value>::new();
+  response.insert(
+    repo.id_field().to_string(),
+    serde_json::Value::String(entity_id.to_string()),
+  );
+
+  Ok((StatusCode::CREATED, Json(response)))
 }
 
 async fn update_entity<M>(
   family_context: FamilyContext,
   repo: CrudRepositoryBean<M>,
   Json(entity): Json<M>,
-) -> Result<impl IntoResponse, StatusCode>
+) -> Result<impl IntoResponse, ProblemDetails>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match repo.update(&family_context, entity).await {
-    Ok(_) => Ok(StatusCode::ACCEPTED),
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-  }
+  repo.update(&family_context, entity).await?;
+  Ok(StatusCode::ACCEPTED)
 }
 
 async fn delete_entity<M>(
   family_context: FamilyContext,
   repo: CrudRepositoryBean<M>,
   Path(id): Path<Uuid>,
-) -> Result<impl IntoResponse, StatusCode>
+) -> Result<impl IntoResponse, ProblemDetails>
 where
   M: Serialize + DeserializeOwned + Send,
 {
-  match repo.delete(&family_context, id).await {
-    Ok(_) => Ok(StatusCode::ACCEPTED),
-    Err(err) => {
-      log::error!("{}", err);
-      Err(StatusCode::INTERNAL_SERVER_ERROR)
-    }
-  }
+  repo.delete(&family_context, id).await?;
+  Ok(StatusCode::ACCEPTED)
 }

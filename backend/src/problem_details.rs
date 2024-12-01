@@ -8,6 +8,12 @@ pub struct ProblemDetails {
   pub status: u16,
 }
 
+impl ProblemDetails {
+  pub fn not_found() -> Self {
+    Self { status: 404 }
+  }
+}
+
 impl IntoResponse for ProblemDetails {
   fn into_response(self) -> Response {
     let my_json = serde_json::to_vec(&self).unwrap();
