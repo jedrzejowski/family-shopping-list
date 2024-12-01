@@ -36,20 +36,20 @@ export function useFastSnackbar() {
         arg = {
           variant: 'success',
           message: 'Zapisano',
-        }
+        };
       } else if (arg === 'deleted') {
         arg = {
           variant: 'default',
           message: 'Usunięto',
-        }
+        };
       } else if (arg === 'error') {
         arg = {
           variant: 'error',
           message: 'Wystąpił błąd',
-        }
+        };
       }
 
-      const actions = (arg.actions ?? ['close']);
+      const actions = arg.actions ?? ['close'];
 
       return enqueueSnackbar({
         message: arg.message,

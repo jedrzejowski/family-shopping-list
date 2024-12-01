@@ -42,7 +42,11 @@ function ScrollableSearchable<UseSearchQueryProps extends object>(
 
     <List ref={animationParent}>
       {productListQueries.data?.items?.map((entityId) => {
-        return <Fragment key={entityId}>{props.renderItem(entityId)}</Fragment>;
+        return <Fragment key={entityId}>
+          {props.renderItem(entityId, {
+            searchQueryText: searchQueryText,
+          })}
+        </Fragment>;
       })}
     </List>
   </>

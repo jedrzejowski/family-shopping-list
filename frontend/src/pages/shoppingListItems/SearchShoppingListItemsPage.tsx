@@ -35,7 +35,12 @@ const SearchShoppingListItemsPage: FC<{
       useSearchQuery={itemsOfShoppingListRepo.useSearchQuery}
       useSearchQueries={itemsOfShoppingListRepo.useSearchQueries}
       additionalSearchQueryProps={{shoppingListId: props.shoppingListId}}
-      renderItem={id => <ShoppingListItem shoppingListItemId={id}/>}
+      renderItem={(id, {searchQueryText}) => (
+        <ShoppingListItem
+          shoppingListItemId={id}
+          searchQueryText={searchQueryText}
+        />
+      )}
       toolbarActions={<>
         <Button
           variant="contained"
@@ -54,6 +59,7 @@ export default SearchShoppingListItemsPage
 
 const ShoppingListItem: FC<{
   shoppingListItemId: string;
+  searchQueryText: string;
 }> = props => {
   const navigate = useNavigate();
   const shoppingListQuery = shoppingListItemsRepo.useGetQuery(props.shoppingListItemId);
@@ -78,7 +84,7 @@ const ShoppingListItem: FC<{
         isCheckedMutation.mutate({
           shoppingListItemId: props.shoppingListItemId,
           isChecked: !shoppingListQuery.data.isChecked,
-          updateSearch: true,
+          updateSearch: props.searchQueryText,
         })
       }}
       secondaryActions={[

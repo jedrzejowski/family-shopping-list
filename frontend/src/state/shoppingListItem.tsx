@@ -18,8 +18,8 @@ export function useShoppingListItemIsCheckedMutation() {
     onMutate(variables: {
       shoppingListItemId: string;
       isChecked: boolean;
-      updateSearch: boolean;
-      moveToIndex?: number;
+      updateSearch?: string;
+      rollbackToIndex?: number;
     }) {
       const ctx = {
         dataBefore: null as model.ShoppingListItem | null,
@@ -66,7 +66,7 @@ export function useShoppingListItemIsCheckedMutation() {
     },
     onSuccess(_data, variables, context) {
 
-      if (variables.updateSearch && context.dataBefore) {
+      if (typeof variables.updateSearch === 'string' && context.dataBefore) {
 
         let undoAction: FastSnackbarAction = null;
 
@@ -74,46 +74,44 @@ export function useShoppingListItemIsCheckedMutation() {
           itemsOfShoppingListRepo.makeQueryKeyFor.fullSearch({
             shoppingListId: context.dataBefore.shoppingListId,
             limit: Infinity,
-            offset: 0
+            offset: 0,
+            searchText: variables?.updateSearch,
           }),
           (data: SearchResult<string> | undefined) => {
-            if (data) {
-              const index = data.items.indexOf(variables.shoppingListItemId);
+            if (!data) return data;
+            const index = data.items.indexOf(variables.shoppingListItemId);
 
-              if (index >= 0) {
-                const items = [...data.items];
-                items.splice(index, 1);
+            if (index < 0) return data;
+            const items = [...data.items];
+            items.splice(index, 1);
 
-                if (typeof variables.moveToIndex === 'number') {
-                  items.splice(variables.moveToIndex, 0, variables.shoppingListItemId);
-                } else {
-                  if (variables.isChecked) {
-                    items.push(variables.shoppingListItemId);
-                  } else {
-                    items.unshift(variables.shoppingListItemId);
-                  }
-
-                  undoAction = {
-                    icon: <UndoIcon/>,
-                    handler() {
-                      mutation.mutate({
-                        ...variables,
-                        isChecked: !variables.isChecked,
-                        moveToIndex: index,
-                      })
-                    }
-                  };
-                }
-
-                data = {...data, items};
+            if (typeof variables.rollbackToIndex === 'number') {
+              items.splice(variables.rollbackToIndex, 0, variables.shoppingListItemId);
+            } else {
+              if (variables.isChecked) {
+                items.push(variables.shoppingListItemId);
+              } else {
+                items.unshift(variables.shoppingListItemId);
               }
 
+              undoAction = {
+                icon: <UndoIcon/>,
+                handler() {
+                  mutation.mutate({
+                    ...variables,
+                    isChecked: !variables.isChecked,
+                    rollbackToIndex: index,
+                  })
+                }
+              };
             }
+
+            data = {...data, items};
             return data;
           });
 
 
-        if (variables.moveToIndex === undefined) {
+        if (variables.rollbackToIndex === undefined) {
           if (lastSnackbarKey !== undefined) fastSnackbar.closeSnackbar(lastSnackbarKey);
           lastSnackbarKey = fastSnackbar({
             variant: 'success',

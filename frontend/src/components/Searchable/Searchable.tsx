@@ -10,7 +10,9 @@ export interface SearchableProps<
 > {
   useSearchQuery: UseSearchQuery<UseSearchQueryProps>;
   useSearchQueries: UseSearchQueries<UseSearchQueryProps>;
-  renderItem: (entityId: string) => ReactNode;
+  renderItem: (entityId: string, ctx: {
+    searchQueryText: string;
+  }) => ReactNode;
   additionalSearchQueryProps?: UseSearchQueryProps;
   toolbarActions?: ReactNode;
   initialPageSize?: number;

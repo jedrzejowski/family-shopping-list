@@ -65,7 +65,11 @@ function PaginatedSearchable<UseSearchQueryProps extends object>(
             return offset <= i && i < offset + limit;
           })
           .map(entityId => {
-            return <Fragment key={entityId}>{props.renderItem(entityId)}</Fragment>;
+            return <Fragment key={entityId}>
+              {props.renderItem(entityId, {
+                searchQueryText: searchQueryText,
+              })}
+            </Fragment>;
           })}
       </List>
     )}/>
