@@ -15,11 +15,15 @@ export function createRepoOfItemsOfEntity<Key extends string>(args: {
   }
 
   const makeQueryKeyFor = {
-    search(args: SearchParams & AdditionalArgs) {
-      const {[idField]: idValue, offset, searchText = ''} = args;
-      let limit: string | number = args.limit;
-      if (limit == Infinity) limit = 'Infinity';
-      return ['repo', `${repoName}/${listName}`, idValue, {limit, offset}, searchText];
+    search(args?: SearchParams & AdditionalArgs) {
+      if (args) {
+        const {[idField]: idValue, offset, searchText = ''} = args;
+        let limit: string | number = args.limit;
+        if (limit == Infinity) limit = 'Infinity';
+        return ['repo', `${repoName}/${listName}`, idValue, {limit, offset}, searchText];
+      } else {
+        return ['repo', `${repoName}/${listName}`];
+      }
     }
   };
 
