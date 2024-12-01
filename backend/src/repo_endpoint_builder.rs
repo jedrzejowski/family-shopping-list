@@ -3,16 +3,14 @@ use crate::family_context::FamilyContext;
 use crate::model::SearchParams;
 use crate::problem_details::ProblemDetails;
 use crate::repository::{CrudRepository, CrudRepositoryBean};
-use axum::extract::{FromRef, FromRequestParts, Path, Query, Request, State};
-use axum::handler::Handler;
+use axum::extract::{FromRequestParts, Path, Query};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 use std::collections::HashMap;
-use std::marker::PhantomData;
 use uuid::Uuid;
 
 pub trait RepoEndpointBuilder<S> {
