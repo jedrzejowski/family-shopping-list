@@ -2,9 +2,8 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useFetchApi} from './fetch.ts';
 import * as model from '../model.ts';
 import {useFastSnackbar} from '../hooks/snackbar.tsx';
-import {shoppingListItemsRepo} from './stdRepos.ts';
+import {itemsOfShoppingListRepo, shoppingListItemsRepo} from './stdRepos.ts';
 import {SearchResult} from '../model.ts';
-import {createQueryKeyForShoppingListItemsQuery} from './shoppingList.tsx';
 
 export function useShoppingListItemIsCheckedMutation() {
   const fetchApi = useFetchApi();
@@ -17,7 +16,7 @@ export function useShoppingListItemIsCheckedMutation() {
       isChecked: boolean;
       updateSearch: boolean
     }) {
-      let ctx = {
+      const ctx = {
         dataBefore: null as model.ShoppingListItem | null,
       };
 
@@ -63,7 +62,7 @@ export function useShoppingListItemIsCheckedMutation() {
 
       if (variables.updateSearch && context.dataBefore) {
         queryClient.setQueryData(
-          createQueryKeyForShoppingListItemsQuery({
+          itemsOfShoppingListRepo.makeQueryKeyFor.search({
             shoppingListId: context.dataBefore.shoppingListId,
             limit: Infinity,
             offset: 0

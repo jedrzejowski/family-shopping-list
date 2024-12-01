@@ -1,12 +1,13 @@
-use std::ops::Deref;
+use crate::database::sqlite::SqliteDatabase;
+use crate::repository::{
+  CrudRepository, ProductRepository, ShoppingListItemRepository, ShoppingListRepository,
+};
 use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
 use axum::http::StatusCode;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use crate::database::sqlite::SqliteDatabase;
-use crate::repository::{CrudRepository, ShoppingListRepository, ShoppingListItemRepository};
-
+use std::ops::Deref;
 
 #[derive(FromRef, Clone)]
 pub struct AppState {
@@ -31,27 +32,33 @@ where
 {
   type Rejection = StatusCode;
 
-  async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+  async fn from_request_parts(
+    parts: &mut Parts,
+    state: &AppState,
+  ) -> Result<Self, Self::Rejection> {
     Ok(Bean(Box::new(state.database.clone())))
   }
 }
 
 macro_rules! db_bean {
-    ($trat_name:ident) => {
-        #[async_trait::async_trait]
-        impl FromRequestParts<AppState> for Bean<dyn $trat_name> {
-          type Rejection = StatusCode;
+  ($trait_name:ident) => {
+    #[async_trait::async_trait]
+    impl FromRequestParts<AppState> for Bean<dyn $trait_name> {
+      type Rejection = StatusCode;
 
-          async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
-            Ok(Bean(Box::new(state.database.clone())))
-          }
-        }
-    };
+      async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState,
+      ) -> Result<Self, Self::Rejection> {
+        Ok(Bean(Box::new(state.database.clone())))
+      }
+    }
+  };
 }
 
 db_bean!(ShoppingListRepository);
 db_bean!(ShoppingListItemRepository);
-
+db_bean!(ProductRepository);
 
 // #[async_trait::async_trait]
 // impl FromRequestParts<AppState> for Bean<dyn ShoppingListRepository> {

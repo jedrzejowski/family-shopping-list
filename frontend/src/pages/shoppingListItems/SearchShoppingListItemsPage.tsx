@@ -3,16 +3,14 @@ import {useNavigate} from "react-router-dom";
 import PageContainer from "../../components/PageContainer.tsx";
 import PageTitle from "../../components/PageTitle.tsx";
 import {Button} from "@mui/material";
-import {useShoppingListItemsQueries, useShoppingListItemsQuery} from "../../state/shoppingList.tsx";
-import {productsRepo, shoppingListItemsRepo, shoppingListsRepo} from "../../state/stdRepos.ts";
+import {itemsOfShoppingListRepo, productsRepo, shoppingListItemsRepo, shoppingListsRepo} from "../../state/stdRepos.ts";
 import SearchableItem from "../../components/Searchable/SearchableItem.tsx";
 import PageActions from "../../components/PageActions.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import {useShoppingListItemIsCheckedMutation} from "../../state/shoppingListItem.ts";
 import SearchableItemPlaceholder from "../../components/Searchable/SearchableItemPlaceholder.tsx";
+import Searchable from "../../components/Searchable/Searchable.tsx";
 import {useIsMobileLayout} from "../../mui-theme.tsx";
-import ScrollableSearchable from "../../components/Searchable/ScrollableSearchable.tsx";
-import PaginatedSearchable from "../../components/Searchable/PaginatedSearchable.tsx";
 
 const SearchShoppingListItemsPage: FC<{
   shoppingListId: string;
@@ -21,7 +19,6 @@ const SearchShoppingListItemsPage: FC<{
   const shoppingListQuery = shoppingListsRepo.useGetQuery(props.shoppingListId)
   const isMobileLayout = useIsMobileLayout();
 
-  const Searchable = isMobileLayout ? ScrollableSearchable : PaginatedSearchable;
 
   return <PageContainer>
     <PageTitle title={<>Listy zakupów / {shoppingListQuery.data?.name} / pozycje</>}/>
@@ -35,10 +32,10 @@ const SearchShoppingListItemsPage: FC<{
     ]}/>
 
     <Searchable
-      useSearchQuery={useShoppingListItemsQuery}
-      useSearchQueries={useShoppingListItemsQueries}
+      useSearchQuery={itemsOfShoppingListRepo.useSearchQuery}
+      useSearchQueries={itemsOfShoppingListRepo.useSearchQueries}
       additionalSearchQueryProps={{shoppingListId: props.shoppingListId}}
-      renderItem={id => <ShoppingListItem key={id} shoppingListItemId={id}/>}
+      renderItem={id => <ShoppingListItem shoppingListItemId={id}/>}
       toolbarActions={<>
         <Button
           variant="contained"

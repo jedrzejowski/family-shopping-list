@@ -1,12 +1,12 @@
-use axum::Router;
-use axum::routing::get;
 use crate::app_state::AppState;
+use axum::routing::get;
+use axum::Router;
 
-pub mod products;
-pub mod shops;
-pub mod shopping_lists;
-pub mod shopping_list_items;
 pub mod everything;
+pub mod products;
+pub mod shopping_list_items;
+pub mod shopping_lists;
+pub mod shops;
 
 pub fn make_router() -> Router<AppState> {
   Router::<AppState>::new()
@@ -16,4 +16,3 @@ pub fn make_router() -> Router<AppState> {
     .nest("/shopping-lists", shopping_lists::make_router())
     .nest("/shopping-list-items", shopping_list_items::make_router())
 }
-

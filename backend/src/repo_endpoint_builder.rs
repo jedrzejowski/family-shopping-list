@@ -1,18 +1,18 @@
-use std::collections::HashMap;
-use std::marker::PhantomData;
-use axum::extract::{FromRef, FromRequestParts, Path, Query, Request, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::{Json, Router};
-use axum::handler::Handler;
-use axum::routing::{delete, get, post, put};
-use serde::{Deserialize, Serialize};
-use serde::de::DeserializeOwned;
-use uuid::Uuid;
 use crate::app_state::Bean;
-use crate::repository::{CrudRepository, CrudRepositoryBean};
 use crate::family_context::FamilyContext;
 use crate::model::SearchParams;
+use crate::repository::{CrudRepository, CrudRepositoryBean};
+use axum::extract::{FromRef, FromRequestParts, Path, Query, Request, State};
+use axum::handler::Handler;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::routing::{delete, get, post, put};
+use axum::{Json, Router};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::marker::PhantomData;
+use uuid::Uuid;
 
 pub trait RepoEndpointBuilder<S> {
   fn with_crud_repository<M>(self) -> Self
@@ -48,16 +48,13 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   match repo.search(&family_context, search_params).await {
-    Ok(search_result) => {
-      Ok(Json(search_result))
-    }
+    Ok(search_result) => Ok(Json(search_result)),
     Err(err) => {
       log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)
     }
   }
 }
-
 
 async fn get_entity<M>(
   family_context: FamilyContext,
@@ -88,7 +85,10 @@ where
   match repo.create(&family_context, entity).await {
     Ok(product_id) => {
       let mut response = HashMap::<String, serde_json::Value>::new();
-      response.insert(repo.id_field().to_string(), serde_json::Value::String(product_id));
+      response.insert(
+        repo.id_field().to_string(),
+        serde_json::Value::String(product_id),
+      );
 
       Ok((StatusCode::CREATED, Json(response)))
     }
@@ -108,9 +108,7 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   match repo.update(&family_context, entity).await {
-    Ok(_) => {
-      Ok(StatusCode::ACCEPTED)
-    }
+    Ok(_) => Ok(StatusCode::ACCEPTED),
     Err(err) => {
       log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)
@@ -127,9 +125,7 @@ where
   M: Serialize + DeserializeOwned + Send,
 {
   match repo.delete(&family_context, id).await {
-    Ok(_) => {
-      Ok(StatusCode::ACCEPTED)
-    }
+    Ok(_) => Ok(StatusCode::ACCEPTED),
     Err(err) => {
       log::error!("{}", err);
       Err(StatusCode::INTERNAL_SERVER_ERROR)

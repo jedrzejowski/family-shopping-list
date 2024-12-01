@@ -31,7 +31,6 @@ impl SearchParams {
   }
 }
 
-
 #[derive(Clone)]
 pub enum SearchParamsLimit {
   Number(usize),
@@ -44,9 +43,7 @@ impl Serialize for SearchParamsLimit {
     S: Serializer,
   {
     match *self {
-      SearchParamsLimit::Number(ref number) => {
-        Serialize::serialize(number, serializer)
-      }
+      SearchParamsLimit::Number(ref number) => Serialize::serialize(number, serializer),
       SearchParamsLimit::Infinity => "Infinity".serialize(serializer),
     }
   }
@@ -77,7 +74,7 @@ impl<'de> Deserialize<'de> for SearchParamsLimit {
 
         match string.parse::<usize>() {
           Ok(num) => Ok(SearchParamsLimit::Number(num)),
-          Err(err) => Err(Error::custom("cant parse"))
+          Err(err) => Err(Error::custom("cant parse")),
         }
       }
     }

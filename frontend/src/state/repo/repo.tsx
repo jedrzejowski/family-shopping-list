@@ -14,6 +14,7 @@ import {useFetchApi} from "../fetch.ts";
 import {createUseDeleteUx} from "./useDeleteUx.tsx";
 import {createEntityAutocomplete} from "./EntityAutocomplete.tsx";
 import {UseSearchQueries, UseSearchQuery} from "./searchQuery.ts";
+import {FC} from "react";
 
 export interface UseText {
   (entityId: string | null | undefined): string | null;
@@ -37,8 +38,8 @@ export interface UseGetEntityQuery<M> {
   (entityId: string | null | undefined): UseQueryResult<M, unknown>;
 }
 
-export function createRepo<M>(name: string, args: {
-  idField: keyof M;
+export function createRepo<M, IdField extends keyof M>(name: string, args: {
+  idField: IdField;
   entityToText: (entity: M) => string;
   postMutationInvalidate?: (args: {
     mutationType: 'update' | 'create' | 'delete';
@@ -284,6 +285,13 @@ export function createRepo<M>(name: string, args: {
     return query ? entityToText(query as M) : null;
   }
 
+  const Text: FC<{
+    [key in IdField]: string;
+  }> = props => {
+    const text = useText(props[idField]);
+    return text;
+  }
+
   return {
     getAllCachedEntities,
     makeQueryKeyFor,
@@ -302,7 +310,8 @@ export function createRepo<M>(name: string, args: {
     EntityAutocomplete: createEntityAutocomplete({
       useText,
       useSearchQuery,
-    })
+    }),
+    Text,
   };
 }
 

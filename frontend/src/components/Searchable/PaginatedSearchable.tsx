@@ -1,21 +1,23 @@
-import {useLayoutEffect, useState} from "react";
+import {Fragment, useLayoutEffect, useState} from "react";
 import {Box, Divider, List, Pagination, Skeleton, TextField, Toolbar} from "@mui/material";
-import type {SearchableFC} from "./Searchable.tsx";
+import {SearchableProps} from "./Searchable.tsx";
 
-const PaginatedSearchable: SearchableFC = props => {
+function PaginatedSearchable<UseSearchQueryProps extends object>(
+  props: SearchableProps<UseSearchQueryProps>
+) {
   const [searchQueryText, setSearchQueryText] = useState('');
   const pageSize = 10; // const [pageSize, setPageSize] = useState<number>(10);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const productListQuery = props.useSearchQuery({
+  const query = props.useSearchQuery({
     searchText: searchQueryText,
     limit: pageSize,
     offset: (pageNumber - 1) * pageSize,
-    ...props.additionalSearchQueryProps as any,
+    ...props.additionalSearchQueryProps as UseSearchQueryProps,
   });
 
   useLayoutEffect(() => {
-    const totalCount = productListQuery.data?.totalCount;
+    const totalCount = query.data?.totalCount;
 
     if (typeof totalCount === 'number') {
       if (totalCount === 0) {
@@ -27,7 +29,7 @@ const PaginatedSearchable: SearchableFC = props => {
       setPageCount(null);
     }
 
-  }, [productListQuery.data?.totalCount, pageSize]);
+  }, [query.data?.totalCount, pageSize]);
 
   useLayoutEffect(() => {
     setPageNumber(1);
@@ -51,13 +53,15 @@ const PaginatedSearchable: SearchableFC = props => {
 
     <Divider sx={{mt: 1}}/>
 
-    {productListQuery.isPending ? (
+    {query.isPending ? (
       <div>Loading</div>
-    ) : productListQuery.isError ? (
+    ) : query.isError ? (
       <div>Error</div>
     ) : (
       <List>
-        {productListQuery.data.items.map(item => props.renderItem(item))}
+        {query.data?.items?.map((entityId) => {
+          return <Fragment key={entityId}>{props.renderItem(entityId)}</Fragment>;
+        })}
       </List>
     )}
 

@@ -1,6 +1,6 @@
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
-use axum::http::{StatusCode};
+use axum::http::StatusCode;
 use uuid::Uuid;
 
 pub struct FamilyContext {

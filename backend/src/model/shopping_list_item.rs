@@ -1,6 +1,6 @@
+use crate::model::meta::EntityMeta;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::model::meta::EntityMeta;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

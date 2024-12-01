@@ -1,13 +1,13 @@
-use axum::{Router};
-use axum::extract::Path;
-use axum::http::StatusCode;
-use axum::routing::post;
-use uuid::Uuid;
 use crate::app_state::{AppState, Bean};
 use crate::family_context::FamilyContext;
 use crate::model;
 use crate::repo_endpoint_builder::RepoEndpointBuilder;
 use crate::repository::ShoppingListItemRepository;
+use axum::extract::Path;
+use axum::http::StatusCode;
+use axum::routing::post;
+use axum::Router;
+use uuid::Uuid;
 
 pub fn make_router() -> Router<AppState> {
   Router::<AppState>::new()
@@ -26,7 +26,7 @@ async fn check_item(
     Err(err) => {
       log::error!("{}", err);
       StatusCode::INTERNAL_SERVER_ERROR
-    },
+    }
   }
 }
 
@@ -40,7 +40,6 @@ async fn uncheck_item(
     Err(err) => {
       log::error!("{}", err);
       StatusCode::INTERNAL_SERVER_ERROR
-    },
+    }
   }
 }
-

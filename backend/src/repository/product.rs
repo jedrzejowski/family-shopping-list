@@ -5,11 +5,11 @@ use anyhow::Result;
 use uuid::Uuid;
 
 #[async_trait::async_trait]
-pub trait ShoppingListRepository: CrudRepository<ShoppingList> {
-  async fn search_items(
+pub trait ProductRepository: CrudRepository<ShoppingList> {
+  async fn search_shopping_lists(
     &self,
     family_context: &FamilyContext,
-    shopping_list_id: Uuid,
+    product_id: Uuid,
     search_params: SearchParams,
   ) -> Result<SearchResult<Uuid>>;
 }

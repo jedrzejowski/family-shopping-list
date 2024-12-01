@@ -1,10 +1,10 @@
-use std::path::Path;
+use crate::model::{EntityMeta, SearchParams, SearchParamsLimit, SearchResult};
 use anyhow::Result;
 use log::LevelFilter;
-use crate::model::{EntityMeta, SearchParams, SearchParamsLimit, SearchResult};
 use sqlx::pool::PoolConnection;
-use sqlx::{ColumnIndex, ConnectOptions, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
+use sqlx::{ColumnIndex, ConnectOptions, Execute, Executor, QueryBuilder, Row, Sqlite, SqlitePool};
+use std::path::Path;
 use time::{OffsetDateTime, UtcOffset};
 use uuid::Uuid;
 
@@ -45,9 +45,7 @@ impl SqliteDatabase {
     //       (),
     //     )?;
 
-    Ok(Self {
-      sqlx_pool: pool,
-    })
+    Ok(Self { sqlx_pool: pool })
   }
 
   #[inline]
@@ -59,8 +57,7 @@ impl SqliteDatabase {
     Ok(self.sqlx_pool.acquire().await?)
   }
 
-  pub fn try_get_meta_fields(&self, row: &SqliteRow) -> Result<EntityMeta, sqlx::Error>
-  {
+  pub fn try_get_meta_fields(&self, row: &SqliteRow) -> Result<EntityMeta, sqlx::Error> {
     Ok(EntityMeta {
       created_at: row.try_get("_meta_created_at")?,
       updated_at: row.try_get("_meta_updated_at")?,
@@ -77,11 +74,15 @@ impl SqliteDatabase {
       Err(err) => Err(sqlx::Error::ColumnDecode {
         index: format!("{index:?}"),
         source: Box::new(err),
-      })
+      }),
     }
   }
 
-  pub fn try_get_option_uuid_field<I>(&self, row: &SqliteRow, index: I) -> Result<Option<Uuid>, sqlx::Error>
+  pub fn try_get_option_uuid_field<I>(
+    &self,
+    row: &SqliteRow,
+    index: I,
+  ) -> Result<Option<Uuid>, sqlx::Error>
   where
     I: ColumnIndex<SqliteRow> + Copy,
   {
@@ -94,7 +95,7 @@ impl SqliteDatabase {
       Err(err) => Err(sqlx::Error::ColumnDecode {
         index: format!("{index:?}"),
         source: Box::new(err),
-      })
+      }),
     }
   }
 
@@ -107,33 +108,35 @@ impl SqliteDatabase {
   ) -> Result<SearchResult<Uuid>> {
     let text_columns = text_columns.as_ref();
 
-    if let Some(search_text) = &search_params.search_text {
-      let search_text = format!("%{}%", search_text);
-      query_builder.push(" and ");
+    if text_columns.len() > 0 {
+      if let Some(search_text) = &search_params.search_text {
+        let search_text = format!("%{}%", search_text);
+        query_builder.push(" and ");
 
-      let mut is_first = true;
+        let mut is_first = true;
 
-      if text_columns.len() > 1 {
-        query_builder.push("( ");
-      }
-
-      for text_column in text_columns {
-        if is_first {
-          is_first = false;
-        } else {
-          query_builder.push(" or ");
+        if text_columns.len() > 1 {
+          query_builder.push("( ");
         }
 
-        query_builder.push("( ifnull(");
-        query_builder.push(text_column);
-        query_builder.push(", '')");
-        query_builder.push(" like ");
-        query_builder.push_bind(search_text.to_string());
-        query_builder.push(" )");
-      }
+        for text_column in text_columns {
+          if is_first {
+            is_first = false;
+          } else {
+            query_builder.push(" or ");
+          }
 
-      if text_columns.len() > 1 {
-        query_builder.push(" )");
+          query_builder.push("( ifnull(");
+          query_builder.push(text_column);
+          query_builder.push(", '')");
+          query_builder.push(" like ");
+          query_builder.push_bind(search_text.to_string());
+          query_builder.push(" )");
+        }
+
+        if text_columns.len() > 1 {
+          query_builder.push(" )");
+        }
       }
     }
 
@@ -162,14 +165,14 @@ impl SqliteDatabase {
 
       if let SearchParamsLimit::Number(limit) = &search_params.limit {
         query_builder.push(" limit ").push_bind(*limit as i64);
-        query_builder.push(" offset ").push_bind(search_params.offset as i64);
+        query_builder
+          .push(" offset ")
+          .push_bind(search_params.offset as i64);
       }
 
       let query = query_builder.build();
 
-      let query = query.try_map(|row: SqliteRow| {
-        self.try_get_uuid_field(&row, 0)
-      });
+      let query = query.try_map(|row: SqliteRow| self.try_get_uuid_field(&row, 0));
 
       query.fetch_all(&self.sqlx_pool).await?
     };
